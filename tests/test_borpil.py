@@ -59,6 +59,13 @@ def test_dbfc_gidis_donus_dusuk():
     assert 0.05 < r["gidis_donus_verimi"] < 0.30
 
 
+def test_dbfc_menzil_uzatici_tutarli():
+    m = td.dbfc_menzil_uzatici(cozelti_kutle_kg=40, tuketim_kWh_100km=15)
+    assert m["nabh4_kg"] == pytest.approx(8.0)
+    assert m["ek_menzil_km"] == pytest.approx(m["enerji_kWh"] / 15 * 100)
+    assert 100 < m["sistem_wh_kg"] < 400
+
+
 def test_nernst_standart_kosul():
     assert td.nernst(1.0, 1, aktivite_orani=1.0) == pytest.approx(1.0)
 

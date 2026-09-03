@@ -78,6 +78,9 @@ faradaik kullanım → ~850 Wh/kg çözelti, ~530 Wh/kg sistem (tank+yığın). 
 ve Au/Pd-Ni anot katalizörleriyle bastırılır. **NaBO₂ → NaBH₄ rejenerasyonu** (Mg veya
 elektrokimyasal indirgeme) teorik 9.3 kWh/kg, pratik verim %20–40 → gidiş-dönüş ~%16.
 Sonuç: DBFC, elektrik depolamak için değil, **yerli bor yakıtıyla menzil uzatmak** için.
+Örnek boyutlandırma (`termodinamik.dbfc_menzil_uzatici`): 40 kg çözelti (8 kg NaBH₄) + 15 kW
+yığın + tank/BOP ≈ 160 kg → 34 kWh, **+227 km**, 3 dakikalık sıvı dolum; harcanan NaBO₂
+istasyonda toplanıp rejenerasyona gönderilir (kapalı bor döngüsü).
 
 ## 2.6 Isıl davranış ve Nernst etkisi
 

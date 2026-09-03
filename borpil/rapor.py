@@ -197,6 +197,10 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
               f"{dp['pratik_wh_kg_cozelti']:.0f} Wh/kg çözelti, {dp['pratik_wh_kg_sistem']:.0f} Wh/kg sistem; "
               f"NaBO₂→NaBH₄ rejenerasyonu dâhil gidiş-dönüş verimi **%{dr['gidis_donus_verimi']*100:.0f}** "
               f"(rejenerasyon verimi %35 varsayımı). Sonuç: DBFC ana depolama değil, menzil uzatıcı/yakıt yoludur.\n")
+    mu = td.dbfc_menzil_uzatici()
+    md.append(f"DBFC menzil uzatıcı örneği: 40 kg çözelti (8 kg NaBH₄) + 15 kW yığın + tank/BOP = {mu['sistem_kutle_kg']:.0f} kg → "
+              f"{mu['enerji_kWh']:.0f} kWh, **+{mu['ek_menzil_km']:.0f} km** ({mu['sistem_wh_kg']:.0f} Wh/kg sistem), "
+              f"~{mu['dolum_suresi_dk']:.0f} dk sıvı dolum.\n")
 
     md.append("## 2. Elektrolit: kloso-borat iletkenliği\n")
     md.append("| Elektrolit | σ(−10 °C) mS/cm | σ(25 °C) | σ(45 °C) | σ(60 °C) | Ea (eV) | ASR 30 µm @45 °C (Ω·cm²) |\n|---|---:|---:|---:|---:|---:|---:|")

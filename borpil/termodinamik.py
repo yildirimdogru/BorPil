@@ -141,6 +141,33 @@ def dbfc_gidis_donus(rejenerasyon_verimi: float = 0.35, **pratik_kwargs) -> dict
     }
 
 
+def dbfc_menzil_uzatici(
+    cozelti_kutle_kg: float = 40.0,
+    tuketim_kWh_100km: float = 15.0,
+    yigin_guc_kW: float = 15.0,
+    yigin_ozgul_guc_W_kg: float = 150.0,
+    tank_bop_kutle_kg: float = 20.0,
+    **pratik_kwargs,
+) -> dict[str, float]:
+    """
+    Araca eklenen bir DBFC menzil uzatıcının kaba boyutlandırması: NaBH₄ çözeltisi tankı
+    (harcanan çözelti NaBO₂ olarak tankta kalır; kütle sabit), yığın ve yardımcı ekipman.
+    Yığın ortalama seyir gücünü (~15 kW) karşılar; tepe güç bataryadan gelir (hibrit).
+    """
+    p = dbfc_pratik(**pratik_kwargs)
+    enerji_kWh = p["pratik_wh_kg_cozelti"] * cozelti_kutle_kg / 1e3
+    yigin_kg = yigin_guc_kW * 1e3 / yigin_ozgul_guc_W_kg
+    toplam_kg = cozelti_kutle_kg + yigin_kg + tank_bop_kutle_kg
+    return {
+        "enerji_kWh": enerji_kWh,
+        "ek_menzil_km": enerji_kWh / tuketim_kWh_100km * 100.0,
+        "sistem_kutle_kg": toplam_kg,
+        "sistem_wh_kg": enerji_kWh * 1e3 / toplam_kg,
+        "nabh4_kg": cozelti_kutle_kg * pratik_kwargs.get("nabh4_kutle_kesri", 0.20),
+        "dolum_suresi_dk": 3.0,  # sıvı yakıt dolumu; şarj değil
+    }
+
+
 def metal_hava_kiyas() -> list[TeorikKimya]:
     """Bor-hava'yı Li-, Na-, Mg-hava teorik değerleriyle aynı yöntemle kıyaslar."""
     liste = [bor_hava()]

@@ -14,6 +14,8 @@ Bu dosya `borpil rapor` komutuyla üretilir; tüm sayılar `borpil` paketindeki 
 
 DBFC pratik tahmin: %20 NaBH₄ çözeltisi, 1.0 V, %75 yakıt kullanımı → 850 Wh/kg çözelti, 531 Wh/kg sistem; NaBO₂→NaBH₄ rejenerasyonu dâhil gidiş-dönüş verimi **%16** (rejenerasyon verimi %35 varsayımı). Sonuç: DBFC ana depolama değil, menzil uzatıcı/yakıt yoludur.
 
+DBFC menzil uzatıcı örneği: 40 kg çözelti (8 kg NaBH₄) + 15 kW yığın + tank/BOP = 160 kg → 34 kWh, **+227 km** (213 Wh/kg sistem), ~3 dk sıvı dolum.
+
 ## 2. Elektrolit: kloso-borat iletkenliği
 
 | Elektrolit | σ(−10 °C) mS/cm | σ(25 °C) | σ(45 °C) | σ(60 °C) | Ea (eV) | ASR 30 µm @45 °C (Ω·cm²) |
