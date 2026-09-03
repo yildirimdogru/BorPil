@@ -69,18 +69,31 @@ def bcc_kafes_parametresi_A(yogunluk_g_cm3: float, molar_kutle: float, formul_bi
     return (hacim_formul_A3 * formul_birimi_hucre) ** (1 / 3)
 
 
-def na_bosluk_analizi(yogunluk_g_cm3: float, molar_kutle: float) -> dict[str, float]:
+A_BCC_NA2B12H12_A = 7.9  # Å, süperiyonik bcc fazın ölçülen kafes parametresi (Udovic/Verdal 2014)
+
+
+def na_bosluk_analizi(yogunluk_g_cm3: float | None = None, molar_kutle: float | None = None,
+                      a_bcc_A: float | None = A_BCC_NA2B12H12_A) -> dict[str, float]:
     """
     Yüksek-T (süperiyonik) Na2B12H12 fazı: anyonlar bcc kafeste (Im-3m, Z=2), Na+ iyonları
     12d tetrahedral-benzeri sitelerde. Hücrede 4 Na+ için 12 site → 2/3 boşluk (vakans);
     bu yüksek boş-site oranı + anyonların hızlı yeniden yönelimi düşük göç engelinin
     (Ea ~0.2-0.4 eV) yapısal kaynağıdır.
 
+    Kafes parametresi varsayılan olarak ölçülen yüksek-T değeridir (7.9 Å; geçişte ~%15 hacim
+    genleşmesi olduğu için oda sıcaklığı yoğunluğundan türetilmez). a_bcc_A=None verilirse
+    yoğunluk ve molar kütleden hesaplanır.
+
     Anyon "sert küre" yarıçapı, birbirine değen anyonlar varsayımıyla kafesten türetilir
     (R = a√3/4). vdW dâhil geometrik yarıçap (b12h12_geometrisi) ayrıca raporlanır; ikisi
     arasındaki fark H...H temaslarının iç içe geçmesini (yumuşak anyon) gösterir.
     """
-    a = bcc_kafes_parametresi_A(yogunluk_g_cm3, molar_kutle)
+    if a_bcc_A is None:
+        if yogunluk_g_cm3 is None or molar_kutle is None:
+            raise ValueError("a_bcc_A verilmezse yoğunluk ve molar kütle gerekir")
+        a = bcc_kafes_parametresi_A(yogunluk_g_cm3, molar_kutle)
+    else:
+        a = a_bcc_A
     R_sert = a * 3**0.5 / 4                       # bcc'de en yakın komşu a√3/2 → yarıçap a√3/4
     R_vdw = b12h12_geometrisi().etkin_yaricap_A
     d_tet = a * 5**0.5 / 4                        # (1/2,1/4,0) tipi tetrahedral site → anyona uzaklık

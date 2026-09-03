@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from .sabitler import kutle_kesri, molar_kutle, teorik_kapasite_mah_g
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class Malzeme:
     ad: str
     formul: dict[str, float]
@@ -36,15 +36,16 @@ class Malzeme:
         return kutle_kesri(self.formul, "Li")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class Elektrot(Malzeme):
     kapasite_teorik: float = 0.0      # mAh/g (aktif madde)
     kapasite_pratik: float = 0.0      # mAh/g (ilk döngülerde ulaşılabilir)
     potansiyel_ort: float = 0.0       # V, ortalama çalışma potansiyeli (Na+/Na'ya karşı)
     rol: str = "katot"                # "katot" | "anot"
+    metalik: bool = False             # True: kaplanan/soyulan metal anot (kompozit değil)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class KatiElektrolit(Malzeme):
     """
     Kloso-borat katı elektrolit. İletkenlik iki fazlı Arrhenius modeliyle tanımlanır:
@@ -63,7 +64,7 @@ class KatiElektrolit(Malzeme):
     kaynak: str = ""
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class Folyo(Malzeme):
     kalinlik_um: float = 12.0
 
@@ -75,14 +76,14 @@ class Folyo(Malzeme):
 NA2B12H12 = KatiElektrolit(
     ad="Na2B12H12 (dodekahidro-kloso-dodekaborat)",
     formul={"Na": 2, "B": 12, "H": 12},
-    yogunluk=1.55,
+    yogunluk=1.46,
     maliyet_usd_kg=45.0,
     maliyet_varsayim="NaBH4 + B2H6 ölçekli rota; bugünkü laboratuvar fiyatının ~1/50'i",
-    sigma_ref=1e-7, T_ref=298.15, Ea=0.8,
+    sigma_ref=1e-5, T_ref=500.0, Ea=0.8,
     T_gecis=529.0, sigma_gecis_ust=0.1, Ea_ust=0.2,
     oksidasyon_siniri_V=3.0, oksidasyon_pasif_V=4.0,
     kaynak="Udovic ve ark., Chem. Commun. 2014; Verdal ve ark. 2014",
-    notlar="Saf hâlde oda sıcaklığında yalıtkan; ~256 °C üstünde süperiyonik. Anyon karışımıyla geçiş oda sıcaklığına çekilir.",
+    notlar="Saf hâlde oda sıcaklığında yalıtkan (~1e-11 S/cm); 529 K'de ~10^3 kat sıçrayarak süperiyonik bcc faza geçer (a ≈ 7.9 Å). Anyon karışımıyla geçiş oda sıcaklığına çekilir.",
 )
 
 NA2B10H10 = KatiElektrolit(
@@ -132,9 +133,9 @@ NA2_CB9_CB11 = KatiElektrolit(
     maliyet_varsayim="karboran sentezi; yalnız premium hücreler için",
     sigma_ref=0.07, T_ref=298.15, Ea=0.25,
     T_gecis=None,
-    oksidasyon_siniri_V=3.5, oksidasyon_pasif_V=4.2,
-    kaynak="Tang ve ark., ACS Energy Lett. 2016 (karışık anyon katı çözeltisi, ~70 mS/cm @ oda sıcaklığı)",
-    notlar="Bilinen en iletken Na katı elektrolitlerinden biri; maliyet kısıtı nedeniyle 2. nesil.",
+    oksidasyon_siniri_V=3.3, oksidasyon_pasif_V=4.2,
+    kaynak="Tang ve ark., ACS Energy Lett. 2016 (karışık anyon katı çözeltisi, ~70 mS/cm @ oda sıcaklığı); NaCB9H10 için Tang ve ark., Adv. Energy Mater. 2016",
+    notlar="Bilinen en iletken Na katı elektrolitlerinden biri; maliyet kısıtı nedeniyle 2. nesil. 25 °C üstü değerler Arrhenius ekstrapolasyonudur (ölçüm değil).",
 )
 
 KATI_ELEKTROLITLER = {
@@ -154,8 +155,8 @@ NVP = Elektrot(
     ad="Na3V2(PO4)3 (NASICON, NVP)",
     formul=_nvp_formul,
     yogunluk=3.17,
-    maliyet_usd_kg=16.0,
-    maliyet_varsayim="V2O5 ~10 USD/kg + sol-jel/karbon kaplama",
+    maliyet_usd_kg=22.0,
+    maliyet_varsayim="V2O5 ~12 USD/kg × 0.40 kg/kg + sol-jel/karbon kaplama; aralık 18-30",
     kapasite_teorik=teorik_kapasite_mah_g(molar_kutle(_nvp_formul), 2),  # ≈117.6
     kapasite_pratik=110.0,
     potansiyel_ort=3.37,
@@ -209,7 +210,7 @@ NA_FE_MN = Elektrot(
     maliyet_usd_kg=6.0,
     maliyet_varsayim="Fe2O3 + Mn2O3 + Na2CO3 katı hâl sentezi; kritik metal yok",
     kapasite_teorik=teorik_kapasite_mah_g(molar_kutle(_nfm_formul), 0.667),  # ≈175 (0.67 Na)
-    kapasite_pratik=150.0,
+    kapasite_pratik=120.0,   # 4.0 V tavanı ile (P2→O2/'Z' geçişi önlenerek); 1.5-4.3 V'ta 190
     potansiyel_ort=2.75,
     notlar="Vanadyumsuz, en düşük maliyetli katot; nem hassasiyeti ve faz geçişi kaynaklı sönüm yönetilmeli.",
 )
@@ -245,7 +246,8 @@ NA_METAL = Elektrot(
     kapasite_pratik=teorik_kapasite_mah_g(molar_kutle(_na_formul), 1),
     potansiyel_ort=0.0,
     rol="anot",
-    notlar="Kloso-boratlar Na metaline karşı termodinamik olarak kararlı; yumuşak metal → iyi katı-katı temas.",
+    metalik=True,
+    notlar="Kloso-boratlar Na metaline karşı termodinamik olarak kararlı; yumuşak metal → iyi katı-katı temas. Erime noktası 97.8 °C.",
 )
 
 SERT_KARBON = Elektrot(
@@ -254,11 +256,11 @@ SERT_KARBON = Elektrot(
     yogunluk=1.55,
     maliyet_usd_kg=8.0,
     maliyet_varsayim="biyokütle/asfalt öncülü",
-    kapasite_teorik=300.0,
+    kapasite_teorik=300.0,   # ampirik üst değer (kristalografik teorik kapasite tanımlı değil)
     kapasite_pratik=280.0,
     potansiyel_ort=0.20,
     rol="anot",
-    notlar="Muhafazakâr alternatif: Na dendriti riski yok, enerji yoğunluğu düşer.",
+    notlar="Muhafazakâr alternatif: Na dendriti riski yok, enerji yoğunluğu düşer. İlk çevrim tersinmez kaybı (%10-20) np_orani ile karşılanır.",
 )
 
 _mg_formul = {"Mg": 1}
@@ -270,8 +272,10 @@ MG_METAL = Elektrot(
     maliyet_varsayim="ticari",
     kapasite_teorik=teorik_kapasite_mah_g(molar_kutle(_mg_formul), 2),  # ≈2205
     kapasite_pratik=2000.0,
-    potansiyel_ort=0.0,  # Mg2+/Mg referansı
+    potansiyel_ort=0.34,  # Mg2+/Mg, Na+/Na'ya karşı (yalnız Mg-elektrolitli ayrı bir hücrede anlamlı)
     rol="anot",
+    metalik=True,
+    notlar="Na kloso-borat SE ile uyumsuz; yalnız Mg(CB11H12)2 tipi Mg elektrolitli izleme yolu için veri.",
 )
 
 ANOTLAR = {"Na": NA_METAL, "sert_karbon": SERT_KARBON, "Mg": MG_METAL}

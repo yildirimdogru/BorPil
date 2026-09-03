@@ -2,7 +2,7 @@
 Kloso-borat katı elektrolitlerin iyon taşınımı.
 
 Model: σ(T) = σ_ref · exp[-(Ea/k)(1/T - 1/T_ref)]  (Arrhenius; σT ~ ön çarpanı ihmal edilmiştir,
-50 K'lik pencerelerde hata < %10). Düzen-düzensizlik geçişi olan tuzlarda geçişin üstünde
+50 K'lik pencerelerde hata < %15). Düzen-düzensizlik geçişi olan tuzlarda geçişin üstünde
 ikinci bir Arrhenius kolu kullanılır.
 
 Fiziksel arka plan: [B12H12]2-/[B10H10]2- anyonları yüksek sıcaklıkta (veya karışımla
@@ -59,11 +59,19 @@ def hedef_kalinlik_um(se: KatiElektrolit, T_C: float, hedef_asr_ohm_cm2: float =
     return max(L_cm * 1e4, min_mekanik_um)
 
 
-def kritik_akim_yogunlugu_mA_cm2(T_C: float, J_ref: float = 1.0, T_ref_C: float = 25.0, Ea_eV: float = 0.45) -> float:
+# Na | kloso-borat arayüzi için 25 °C'de kaplama yönünde kritik akım yoğunluğu (mA/cm²).
+# Literatür (basınç altında, oda sıcaklığı): 0.5-2 mA/cm²; merkezî tasarım değeri 1.5.
+J_KRITIK_25C_MA_CM2 = 1.5
+EA_ARAYUZ_EV = 0.45
+
+
+def kritik_akim_yogunlugu_mA_cm2(T_C: float, J_ref: float = J_KRITIK_25C_MA_CM2, T_ref_C: float = 25.0,
+                                 Ea_eV: float = EA_ARAYUZ_EV) -> float:
     """
     Na-metal/kloso-borat arayüzünde dendritsiz çalışabilen kritik akım yoğunluğu için
     ampirik Arrhenius ölçekleme (T_ref'te J_ref). Sıcaklık artınca Na sürünmesi (creep) ve
-    iyonik iletkenlik artar, boşluk oluşumu azalır → J_kritik artar.
+    iyonik iletkenlik artar, boşluk oluşumu azalır → J_kritik artar. Tüm modüller bu tek
+    tanımı kullanır (tutarlılık için).
     """
     T = T_C + C_TO_K
     T0 = T_ref_C + C_TO_K

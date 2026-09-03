@@ -107,6 +107,8 @@ class HucreSonucu:
     malzeme_usd_per_kwh: float
     asr_toplam_ohm_cm2: float
     sigma_S_cm: float
+    elektrot_alani_cm2: float          # hücre başına toplam tek-yüz katot alanı
+    uyarilar: list[str]
 
     def ozet(self) -> str:
         t = self.tasarim
@@ -130,6 +132,7 @@ class HucreSonucu:
             f"V {self.v_kg_per_kwh:.2f} kg/kWh, Li {self.li_kg_per_kwh:.2f} kg/kWh",
             f"Malzeme maliyeti (varsayımsal ölçek): {self.malzeme_usd_per_kwh:.0f} USD/kWh",
         ]
+        satirlar += [f"  ! {u}" for u in self.uyarilar]
         return "\n".join(satirlar)
 
 
@@ -150,14 +153,16 @@ def hesapla(t: HucreTasarimi, hedef_kapasite_Ah: float = 60.0) -> HucreSonucu:
     # --- Anot (tek yüz)
     if t.anot.rol != "anot":
         raise ValueError("anot rolü 'anot' olmalı")
-    if t.anot is mz.NA_METAL or t.anot is mz.MG_METAL:
-        kaplanan_mg = q_c / t.anot.kapasite_pratik * 1e3           # deşarj sonunda katota geri döner
+    metalik = t.anot.metalik
+    if metalik:
+        # Kütle korunumu: döngüye giren Na zaten katot formülünde (Na3V2(PO4)3, deşarjlı hâl)
+        # sayılmıştır; anot kütlesine yalnız fazlalık eklenir. Kalınlık için şarjlı (maksimum) hâl alınır.
+        kaplanan_mg = q_c / t.anot.kapasite_pratik * 1e3
         fazla_mg = t.anot_fazlasi_um * 1e-4 * t.anot.yogunluk * 1e3
-        toplam_mg = kaplanan_mg + fazla_mg
-        kalinlik = toplam_mg * 1e-3 / t.anot.yogunluk * 1e4
-        anot = KatmanSonucu(f"{t.anot.ad} anot (şarjlı)", kalinlik, toplam_mg, 0.0,
-                            toplam_mg * 1e-6 * 1e4 * t.anot.maliyet_usd_kg)
-        anot_potansiyel = 0.0
+        kalinlik = (kaplanan_mg + fazla_mg) * 1e-3 / t.anot.yogunluk * 1e4
+        anot = KatmanSonucu(f"{t.anot.ad} anot (fazlalık; şarjlı kalınlık)", kalinlik, fazla_mg, 0.0,
+                            fazla_mg * 1e-6 * 1e4 * t.anot.maliyet_usd_kg)
+        anot_potansiyel = t.anot.potansiyel_ort
     else:
         aktif_mg = q_c * t.np_orani / t.anot.kapasite_pratik * 1e3
         anot = _kompozit_katman(f"{t.anot.ad} kompozit anot", t.anot_recete, t.anot, se, aktif_mg)
@@ -201,11 +206,11 @@ def hesapla(t: HucreTasarimi, hedef_kapasite_Ah: float = 60.0) -> HucreSonucu:
         mg += 2 * katot_aktif_mg * kutle_kesri(katot.formul, el)
         # SE (ayırıcı + kompozitlerdeki)
         se_toplam_mg = 2 * se_mg + 2 * kat.kutle_mg_cm2 * t.katot_recete.elektrolit
-        if not (t.anot is mz.NA_METAL or t.anot is mz.MG_METAL):
+        if not metalik:
             se_toplam_mg += 2 * anot.kutle_mg_cm2 * t.anot_recete.elektrolit
         mg += se_toplam_mg * kutle_kesri(se.formul, el)
-        # anot
-        if t.anot is mz.NA_METAL or t.anot is mz.MG_METAL:
+        # anot (metalikte yalnız fazlalık; döngüsel Na katot formülünde sayılı)
+        if metalik:
             mg += 2 * anot.kutle_mg_cm2 * kutle_kesri(t.anot.formul, el)
         else:
             mg += 2 * anot.kutle_mg_cm2 * t.anot_recete.aktif * kutle_kesri(t.anot.formul, el)
@@ -222,6 +227,18 @@ def hesapla(t: HucreTasarimi, hedef_kapasite_Ah: float = 60.0) -> HucreSonucu:
     # kompozit katotta iyonik yol ~ kalınlığın yarısı (dağıtılmış reaksiyon)
     asr_katot = (kat.kalinlik_um * 1e-4 / 2) / sigma_eff
     asr_toplam = asr_ayirici + asr_katot + t.arayuz_direnci_ohm_cm2
+
+    # --- Kararlılık penceresi kontrolü (şarj kesim potansiyeli ≈ ortalama + 0.4 V)
+    uyarilar: list[str] = []
+    kesim_V = katot.potansiyel_ort + 0.4
+    if kesim_V > se.oksidasyon_pasif_V:
+        uyarilar.append(f"KRİTİK: katot kesim potansiyeli ~{kesim_V:.1f} V, elektrolitin pasifleşmeyle "
+                        f"ulaştığı sınırı ({se.oksidasyon_pasif_V:.1f} V) aşıyor.")
+    elif kesim_V > se.oksidasyon_siniri_V:
+        uyarilar.append(f"UYARI: katot kesim potansiyeli ~{kesim_V:.1f} V termodinamik oksidasyon sınırının "
+                        f"({se.oksidasyon_siniri_V:.1f} V) üstünde; çalışma pasifleştirici arayüze (kaplama) dayanır.")
+    if metalik and t.anot is mz.MG_METAL:
+        uyarilar.append("KRİTİK: Mg anot Na⁺ iletken kloso-borat ile uyumsuz; yalnız Mg elektrolitli hücrede anlamlı.")
 
     return HucreSonucu(
         tasarim=t,
@@ -245,6 +262,8 @@ def hesapla(t: HucreTasarimi, hedef_kapasite_Ah: float = 60.0) -> HucreSonucu:
         malzeme_usd_per_kwh=tekrar_maliyet / (enerji_mWh_cm2 * 1e-3 * 1e4) * 1e3,  # USD/m² ÷ Wh/m² → USD/Wh → USD/kWh
         asr_toplam_ohm_cm2=asr_toplam,
         sigma_S_cm=sigma,
+        elektrot_alani_cm2=alan_cm2 * 2 * n,
+        uyarilar=uyarilar,
     )
 
 
@@ -287,6 +306,13 @@ BORPIL_S = HucreTasarimi(
     arayuz_direnci_ohm_cm2=20.0,
 )
 
+BORPIL_A_ALT = HucreTasarimi(
+    ad="BorPil-A-alt (Na | Na2(B12H12)(B10H10) | NVP) — muhafazakâr alt tahmin (60 µm SE, 50 µm Na, 30 Ω·cm²)",
+    ayirici_kalinlik_um=60.0,
+    anot_fazlasi_um=50.0,
+    arayuz_direnci_ohm_cm2=30.0,
+)
+
 BORPIL_A_FE = HucreTasarimi(
     ad="BorPil-A-Fe (Na | Na2(B12H12)(B10H10) | Na2/3Fe1/2Mn1/2O2) — vanadyumsuz düşük maliyet",
     katot=mz.NA_FE_MN,
@@ -294,6 +320,7 @@ BORPIL_A_FE = HucreTasarimi(
 
 VARYANTLAR = {
     "A": BORPIL_A,
+    "A-alt": BORPIL_A_ALT,
     "A0": BORPIL_A_MUHAFAZAKAR,
     "A-Fe": BORPIL_A_FE,
     "B": BORPIL_B,

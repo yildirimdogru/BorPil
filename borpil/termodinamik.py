@@ -103,13 +103,14 @@ def dbfc() -> TeorikKimya:
 
 def dbfc_pratik(
     nabh4_kutle_kesri: float = 0.20,
-    calisma_gerilimi_V: float = 1.0,
-    yakit_kullanimi: float = 0.75,
+    calisma_gerilimi_V: float = 0.85,
+    yakit_kullanimi: float = 0.65,
     sistem_kutle_carpani: float = 1.6,
 ) -> dict[str, float]:
     """
     Alkali sulu NaBH4 çözeltisiyle (ör. %20 NaBH4 / %10 NaOH) pratik enerji yoğunluğu tahmini.
-    yakit_kullanimi: hidroliz kaynaklı BH4- kaybı sonrası faradaik kullanım oranı.
+    Yük altında hücre gerilimi 0.7-0.9 V; yakit_kullanimi: hidroliz kaynaklı BH4- kaybı sonrası
+    faradaik kullanım oranı (%50-75).
     sistem_kutle_carpani: yığın + tank + pompa + BOP dâhil kütle çarpanı (yakıt kütlesine oranla).
     """
     t = dbfc()
@@ -124,11 +125,11 @@ def dbfc_pratik(
     }
 
 
-def dbfc_gidis_donus(rejenerasyon_verimi: float = 0.35, **pratik_kwargs) -> dict[str, float]:
+def dbfc_gidis_donus(rejenerasyon_verimi: float = 0.30, **pratik_kwargs) -> dict[str, float]:
     """
     NaBO2 → NaBH4 rejenerasyonu (elektrokimyasal/hidrojenle indirgeme) dâhil gidiş-dönüş verimi.
     Rejenerasyonun teorik enerji girdisi = -ΔG_rxn (9.33 kWh/kg NaBH4); pratik verim
-    (rejenerasyon_verimi) literatürde %20-40 arasındadır. Sonuç: pil olarak kullanılırsa
+    (rejenerasyon_verimi) literatürde %15-35 arasındadır (ABD DOE 2007 "no-go" gerekçesi). Sonuç: pil olarak kullanılırsa
     elektrik→elektrik verimi. Bu, DBFC'nin ana depolama yerine yakıt/menzil uzatıcı olarak
     konumlandırılmasının nicel gerekçesidir.
     """

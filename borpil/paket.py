@@ -20,9 +20,10 @@ class PaketGereksinimi:
     tepe_guc_kW: float = 200.0        # 10 s darbe
     hizli_sarj_kW: float = 75.0       # 1. nesil: Na kaplama kritik akım yoğunluğu ile sınırlı (~1C)
     # Kütle/hacim çarpanları: CTP (cell-to-pack) mimarisi; katı hâl (yanıcı elektrolit yok)
-    # → daha az yangın bariyeri, ancak yalıtım ceketi + ısıtıcı eklenir.
-    hucre_paket_kutle_orani: float = 0.76
-    hucre_paket_hacim_orani: float = 0.62
+    # → daha az yangın bariyeri, ancak yığın basıncı fikstürü (1-2 MPa), 12 mm yalıtım ve ısıtıcı
+    # eklenir. Hakem önerisi aralığı: 0.65-0.72 kütle, 0.50-0.58 hacim.
+    hucre_paket_kutle_orani: float = 0.72
+    hucre_paket_hacim_orani: float = 0.56
     # Maliyet: hücre imalat çarpanı (malzeme → hücre) ve paket düzeyi ek maliyet
     imalat_carpani: float = 1.55
     paket_ek_usd_kWh: float = 22.0
@@ -95,7 +96,7 @@ def boyutlandir(tasarim: HucreTasarimi, gereksinim: PaketGereksinimi = PaketGere
     paket_hacim = hucre_hacim / gereksinim.hucre_paket_hacim_orani
 
     # Toplam elektrot alanı (tek yüz eşdeğeri) → akım yoğunluğu
-    alan_cm2 = (tasarim.pouch_en_mm * tasarim.pouch_boy_mm / 100.0) * 2 * h.katman_sayisi * n
+    alan_cm2 = h.elektrot_alani_cm2 * n
     # Hücre akımı = I_paket / paralel; hücre alanı = alan_toplam / n  →  j = I_paket · seri / alan_toplam
     I_surekli_A = gereksinim.surekli_guc_kW * 1e3 / V_nom
     j_surekli = I_surekli_A * seri / alan_cm2 * 1e3

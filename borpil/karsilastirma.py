@@ -37,8 +37,8 @@ def _li_referans_satiri(r: mz.ReferansHucre, g: PaketGereksinimi) -> Satir:
 def tablo(varyantlar: dict[str, HucreTasarimi], g: PaketGereksinimi = PaketGereksinimi()) -> list[Satir]:
     satirlar = []
     for anahtar, t in varyantlar.items():
-        h = hesapla(t)
         p = boyutlandir(t, g)
+        h = p.hucre  # paket için yeniden boyutlanmış hücre (tutarlılık)
         satirlar.append(Satir(
             f"BorPil-{anahtar}", h.hucre_wh_kg, h.hucre_wh_L,
             h.malzeme_usd_per_kwh * g.imalat_carpani, p.li_kg, p.bor_kg, 0.0, 0.0, "hayır",

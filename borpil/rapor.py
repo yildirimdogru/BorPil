@@ -79,7 +79,7 @@ def grafik_duyarlilik(cikti: Path, temel: hc.HucreTasarimi) -> Path:
     axes[0].set_xlabel("SE ayırıcı kalınlığı (µm)"); axes[0].set_ylabel("Hücre Wh/kg")
     axes[0].set_title("Enerji yoğunluğu duyarlılığı"); axes[0].legend(fontsize=7); axes[0].grid(alpha=0.3)
 
-    fiyatlar = np.linspace(10, 120, 12)
+    fiyatlar = np.array([10, 20, 30, 50, 75, 100, 150, 200])
     for anahtar in ("A", "A-Fe", "A0"):
         t = hc.VARYANTLAR[anahtar]
         maliyetler = []
@@ -90,6 +90,7 @@ def grafik_duyarlilik(cikti: Path, temel: hc.HucreTasarimi) -> Path:
     axes[1].axhline(55, ls="--", c="gray"); axes[1].text(12, 57, "LFP malzeme maliyeti (~55 USD/kWh)", fontsize=7)
     axes[1].set_xlabel("Kloso-borat elektrolit fiyatı (USD/kg)"); axes[1].set_ylabel("Hücre malzeme maliyeti (USD/kWh)")
     axes[1].set_title("Maliyet duyarlılığı"); axes[1].legend(fontsize=7); axes[1].grid(alpha=0.3)
+    axes[1].set_xscale("log")
     yol = cikti / "duyarlilik.png"
     fig.tight_layout(); fig.savefig(yol); plt.close(fig)
     return yol
@@ -170,9 +171,11 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
     satirlar = ks.tablo(hc.VARYANTLAR, g)
     hA = hc.hesapla(hc.BORPIL_A)
     pA = pk.boyutlandir(hc.BORPIL_A, g)
-    surus_20 = sm.surus_simulasyonu(pA, T_ortam_C=20.0, isitici_hedef_C=None)
-    surus_m10 = sm.surus_simulasyonu(pA, T_ortam_C=-10.0, isitici_hedef_C=25.0, isitici_guc_kW=6.0)
-    surus_35 = sm.surus_simulasyonu(pA, T_ortam_C=35.0, isitici_hedef_C=None)
+    surus_20 = sm.surus_simulasyonu(pA, T_ortam_C=20.0, isitici_hedef_C=35.0)
+    surus_20_isitmasiz = sm.surus_simulasyonu(pA, T_ortam_C=20.0, isitici_hedef_C=None)
+    surus_m10 = sm.surus_simulasyonu(pA, T_ortam_C=-10.0, isitici_hedef_C=35.0)
+    surus_m20_isitmasiz = sm.surus_simulasyonu(pA, T_ortam_C=-20.0, isitici_hedef_C=None)
+    surus_35 = sm.surus_simulasyonu(pA, T_ortam_C=35.0, isitici_hedef_C=35.0)
 
     yollar = {}
     if grafikler:
@@ -193,10 +196,10 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
         md.append(f"| {k.ad} | {k.reaksiyon} | {k.E0_V:.3f} | {k.kapasite_mah_g:.0f} | {k.enerji_wh_kg_reaktan:.0f} | {k.enerji_wh_kg_urun:.0f} |")
     dp = td.dbfc_pratik(); dr = td.dbfc_gidis_donus()
     md.append("")
-    md.append(f"DBFC pratik tahmin: %20 NaBH₄ çözeltisi, 1.0 V, %75 yakıt kullanımı → "
+    md.append(f"DBFC pratik tahmin: %20 NaBH₄ çözeltisi, 0.85 V, %65 yakıt kullanımı → "
               f"{dp['pratik_wh_kg_cozelti']:.0f} Wh/kg çözelti, {dp['pratik_wh_kg_sistem']:.0f} Wh/kg sistem; "
               f"NaBO₂→NaBH₄ rejenerasyonu dâhil gidiş-dönüş verimi **%{dr['gidis_donus_verimi']*100:.0f}** "
-              f"(rejenerasyon verimi %35 varsayımı). Sonuç: DBFC ana depolama değil, menzil uzatıcı/yakıt yoludur.\n")
+              f"(rejenerasyon verimi %30 varsayımı). Sonuç: DBFC ana depolama değil, menzil uzatıcı/yakıt yoludur.\n")
     mu = td.dbfc_menzil_uzatici()
     md.append(f"DBFC menzil uzatıcı örneği: 40 kg çözelti (8 kg NaBH₄) + 15 kW yığın + tank/BOP = {mu['sistem_kutle_kg']:.0f} kg → "
               f"{mu['enerji_kWh']:.0f} kWh, **+{mu['ek_menzil_km']:.0f} km** ({mu['sistem_wh_kg']:.0f} Wh/kg sistem), "
@@ -221,11 +224,18 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
     md.append("```\n" + pA.ozet() + "\n```\n")
 
     md.append("## 5. Sürüş simülasyonu (WLTP-benzeri sentetik çevrim, C-segment)\n")
-    md.append("| Senaryo | Menzil (km) | Tüketim (kWh/100 km) | Paket T başlangıç→bitiş (°C) | Min hücre gerilimi (V) | Ort. I²R ısı (W) |\n|---|---:|---:|---:|---:|---:|")
-    for ad, s in (("20 °C, ısıtıcı yok", surus_20), ("−10 °C, 25 °C'ye ısıtıcı (6 kW)", surus_m10), ("35 °C", surus_35)):
-        md.append(f"| {ad} | {s.menzil_km:.0f} | {s.tuketim_kWh_100km:.1f} | {s.T_baslangic_C:.0f}→{s.T_bitis_C:.0f} | {s.V_min_hucre:.2f} | {s.isi_uretimi_ort_W:.0f} |")
+    md.append("| Senaryo | Menzil (km) | Tüketim (kWh/100 km) | Paket T başlangıç→bitiş (°C) | Min hücre gerilimi (V) | Ort. I²R ısı (W) | Isıtıcı (kWh) | Güç kısıtı (s) / açık (kWh) |\n|---|---:|---:|---:|---:|---:|---:|---:|")
+    for ad, s in (("20 °C, ısıtıcı hedef 35 °C (tasarım stratejisi)", surus_20),
+                  ("20 °C, ısıtıcı kapalı", surus_20_isitmasiz),
+                  ("−10 °C, ısıtıcı hedef 35 °C (6 kW)", surus_m10),
+                  ("−20 °C, ısıtıcı kapalı (stres senaryosu)", surus_m20_isitmasiz),
+                  ("35 °C", surus_35)):
+        md.append(f"| {ad} | {s.menzil_km:.0f} | {s.tuketim_kWh_100km:.1f} | {s.T_baslangic_C:.0f}→{s.T_bitis_C:.0f} | "
+                  f"{s.V_min_hucre:.2f} | {s.isi_uretimi_ort_W:.0f} | {s.isitici_kWh:.1f} | {s.guc_kisiti_s:.0f} / {s.guc_acigi_kWh:.2f} |")
     md.append("")
-    md.append(f"Araç toplam kütlesi {surus_20.toplam_kutle_kg:.0f} kg (glider + yük + paket).\n")
+    md.append(f"Araç toplam kütlesi {surus_20.toplam_kutle_kg:.0f} kg (glider + yük + paket). Tüketim, bataryadan çekilen "
+              f"toplam enerjiyi (ısıtıcı dâhil, şarj kayıpları hariç) içerir; uç enerjisi ∫V·I dt = {surus_20.terminal_enerji_kWh:.1f} kWh "
+              f"(kullanılan {pA.kullanilabilir_enerji_kWh:.1f} kWh, fark I²R kaybı).\n")
 
     md.append("## 6. Li-iyon ile karşılaştırma (75 kWh paket)\n")
     md.append(ks.markdown_tablo(satirlar, g.brut_enerji_kWh))

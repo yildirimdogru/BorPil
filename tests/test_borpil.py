@@ -84,10 +84,12 @@ def test_iletkenlik_sicaklikla_artar():
 
 
 def test_faz_gecisi_sicramasi():
-    se = mz.NA2B10H10
-    alt = float(el.iletkenlik(se, se.T_gecis - 1))
-    ust = float(el.iletkenlik(se, se.T_gecis + 1))
-    assert ust / alt > 100
+    for se in (mz.NA2B10H10, mz.NA2B12H12):
+        alt = float(el.iletkenlik(se, se.T_gecis - 1))
+        ust = float(el.iletkenlik(se, se.T_gecis + 1))
+        assert ust / alt > 30, se.ad
+    # Na2B12H12 düzenli fazı oda sıcaklığında yalıtkan (< 1e-9 S/cm)
+    assert float(el.iletkenlik_C(mz.NA2B12H12, 25)) < 1e-9
 
 
 def test_asr_kalinlikla_dogru_orantili():
@@ -118,15 +120,22 @@ def test_ikosahedron_12_kose_30_kenar():
 
 def test_b12h12_yaricap():
     g = ge.b12h12_geometrisi()
-    assert g.cevrel_yaricap_B_A == pytest.approx(1.78 * math.sin(2 * math.pi / 5), abs=1e-9)
+    # ikosahedron çevrel yarıçapı: a·√(φ√5)/2 = a·0.9511 (altın oran özdeşliği ile bağımsız kontrol)
+    phi = (1 + 5**0.5) / 2
+    assert g.cevrel_yaricap_B_A == pytest.approx(1.78 * math.sqrt(phi * 5**0.5) / 2, abs=1e-9)
+    assert g.cevrel_yaricap_H_A == pytest.approx(g.cevrel_yaricap_B_A + 1.20)
     assert 3.5 < g.etkin_yaricap_A < 4.5
 
 
 def test_na_bosluk_analizi_makul():
-    b = ge.na_bosluk_analizi(mz.NA2B12H12.yogunluk, mz.NA2B12H12.molar_kutle)
-    assert 7.0 < b["kafes_a_A"] < 8.0
+    b = ge.na_bosluk_analizi()
+    assert b["kafes_a_A"] == pytest.approx(7.9)
     assert b["na_site_doluluk"] == pytest.approx(1 / 3)
-    assert 0.6 < b["anyon_hacim_kesri_sert"] < 0.7   # bcc sert küre paketleme = 0.68
+    # 12d tetrahedral site boşluğu Na+ yarıçapıyla (1.02 Å) uyumlu olmalı
+    assert 0.9 < b["tetrahedral_bosluk_yaricap_A"] < 1.1
+    # yoğunluktan türetilen (oda sıcaklığı) kafes, yüksek-T ölçümünden ~%15 hacim küçük
+    b_rho = ge.na_bosluk_analizi(mz.NA2B12H12.yogunluk, mz.NA2B12H12.molar_kutle, a_bcc_A=None)
+    assert 0.80 < (b_rho["kafes_a_A"] / 7.9) ** 3 < 0.95
 
 
 def test_pouch_boyutlandir():
@@ -153,10 +162,47 @@ def test_hucre_temel_tasarim_araligi():
     assert h.tekrar_kapasite_mAh_cm2 == pytest.approx(6.0)
 
 
-def test_kutle_dengesi_katmanlar():
+def test_kutle_dengesi_bagimsiz_el_hesabi():
+    """Hakem el hesabı (BorPil-A): katot 27.27/38.96 mg/cm², SE 4.50, Na fazlası 1.94, Al 3.24 ×2."""
     h = hc.hesapla(hc.BORPIL_A)
-    assert sum(k.kutle_mg_cm2 for k in h.katmanlar) == pytest.approx(h.tekrar_kutle_mg_cm2)
-    assert sum(k.kalinlik_um for k in h.katmanlar) == pytest.approx(h.tekrar_kalinlik_um)
+    katot = 3.0 / 110.0 * 1e3 / 0.70
+    se = 30e-4 * 1.50 * 1e3
+    na_fazla = 20e-4 * 0.97 * 1e3
+    al = 12e-4 * 2.70 * 1e3
+    beklenen = 2 * (katot + se + na_fazla) + 2 * al
+    assert h.tekrar_kutle_mg_cm2 == pytest.approx(beklenen, rel=1e-6)
+    assert h.stack_wh_kg == pytest.approx(6.0 * 3.37 / beklenen * 1e3, rel=1e-6)
+
+
+def test_na_cift_sayim_yok():
+    """Döngüye giren Na katot formülünde sayılır; anot kütlesi yalnız fazlalık Na'dır (kütle korunumu)."""
+    h = hc.hesapla(hc.BORPIL_A)
+    anot = [k for k in h.katmanlar if "Na metal" in k.ad][0]
+    assert anot.kutle_mg_cm2 == pytest.approx(20e-4 * 0.97 * 1e3)
+    # kalınlık ise şarjlı hâl: fazlalık + kaplanan (3 mAh/cm² / 1166 mAh/g / 0.97 g/cm³)
+    assert anot.kalinlik_um == pytest.approx(20 + 3.0 / 1166 / 0.97 * 1e4, rel=1e-3)
+    sifir_fazla = hc.hesapla(dataclasses.replace(hc.BORPIL_A, anot_fazlasi_um=0.0))
+    assert sifir_fazla.na_kg_per_kwh < h.na_kg_per_kwh
+
+
+def test_replace_edilmis_na_anot_metalik_kalir():
+    """Kimlik (is) yerine `metalik` alanı kullanılır; dataclasses.replace edilmiş Na anot kompozit dala düşmez."""
+    na2 = dataclasses.replace(mz.NA_METAL, maliyet_usd_kg=3.5)
+    h = hc.hesapla(dataclasses.replace(hc.BORPIL_A, anot=na2))
+    assert all("kompozit anot" not in k.ad for k in h.katmanlar)
+    assert h.hucre_wh_kg == pytest.approx(hc.hesapla(hc.BORPIL_A).hucre_wh_kg, rel=1e-6)
+
+
+def test_oksidasyon_uyarisi():
+    assert any("oksidasyon" in u for u in hc.hesapla(hc.BORPIL_A).uyarilar)       # NVP 3.37 V > 3.0 V
+    assert not any("KRİTİK" in u for u in hc.hesapla(hc.BORPIL_A).uyarilar)
+    assert hc.hesapla(hc.BORPIL_A_MUHAFAZAKAR).uyarilar[0].startswith("UYARI")     # NaCrO2 kesim 3.35 V
+    mg = dataclasses.replace(hc.BORPIL_A, anot=mz.MG_METAL)
+    assert any("KRİTİK" in u for u in hc.hesapla(mg).uyarilar)
+
+
+def test_malzeme_hashlenebilir():
+    assert len({mz.NVP, mz.NACRO2, mz.NA2_B12_B10}) == 3
 
 
 def test_incelme_enerji_yogunlugunu_artirir():
@@ -198,21 +244,25 @@ def test_paket_800V():
     assert p.seri > 200
 
 
-def test_akim_yogunlugu_olcekleme():
+def test_akim_yogunlugu_bagimsiz_hesap():
+    """Hücre akımı = I_paket/paralel; hücre alanı = 2 × katman × pouch alanı."""
     p = pk.boyutlandir(hc.BORPIL_A)
-    # 1C'ye yakın sürekli güçte j ≈ alan kapasitesi (3 mAh/cm²) mertebesinde olmalı
+    I_paket = p.gereksinim.surekli_guc_kW * 1e3 / p.nominal_gerilim_V
+    I_hucre = I_paket / p.paralel
+    alan_hucre = 2 * p.hucre.katman_sayisi * (100 * 300 / 100.0)
+    assert p.surekli_akim_yogunlugu_mA_cm2 == pytest.approx(I_hucre / alan_hucre * 1e3, rel=1e-9)
+    # ~1C sürekli güçte j, alan kapasitesi (3 mAh/cm²) mertebesinde
     assert 2.0 < p.surekli_akim_yogunlugu_mA_cm2 < 4.5
-    assert p.tepe_akim_yogunlugu_mA_cm2 == pytest.approx(
-        p.surekli_akim_yogunlugu_mA_cm2 * p.gereksinim.tepe_guc_kW / p.gereksinim.surekli_guc_kW)
 
 
 # --- Simülasyon -----------------------------------------------------------------
 
-def test_ocv_monoton_ve_aralikta():
-    s = np.linspace(0, 1, 101)
+def test_ocv_monoton_ve_ortalamasi_nominal():
+    s = np.linspace(0, 1, 100001)
     V = sm.ocv(s, 3.37)
     assert np.all(np.diff(V) > 0)
-    assert 2.7 < V[0] < 3.2 and 3.4 < V[-1] < 3.6
+    assert float(np.trapezoid(V, s)) == pytest.approx(3.37, abs=1e-4)   # enerji tutarlılığı
+    assert V[0] < 3.1 and V[-1] > 3.5
 
 
 def test_direnc_sogukta_artar():
@@ -229,7 +279,10 @@ def test_maks_guc_sicaklikla_artar_ve_tavanlanir():
     p = pk.boyutlandir(hc.BORPIL_A)
     P = [sm.maks_guc_kW(p, T) for T in (-10, 10, 30, 50, 70)]
     assert all(b >= a for a, b in zip(P, P[1:]))
-    assert P[-1] < 400  # kritik akım tavanı devrede
+    # 70 °C'de j tavanı (12 mA/cm²) devrede: P ≤ tavan akımı × OCV × hücre sayısı
+    I_tavan = 12.0 * p.hucre.elektrot_alani_cm2 / 1e3
+    assert P[-1] <= I_tavan * float(sm.ocv(0.5, p.hucre.gerilim_V)) * p.hucre_sayisi / 1e3
+    assert P[-1] > 0.8 * I_tavan * sm.v_min_hucre(p.hucre) * p.hucre_sayisi / 1e3
 
 
 def test_cevrim_wltp_benzeri():
@@ -240,15 +293,35 @@ def test_cevrim_wltp_benzeri():
     assert v.max() * 3.6 == pytest.approx(131, abs=1)
 
 
-def test_surus_menzil_makul():
+def test_surus_menzil_makul_ve_enerji_tutarli():
     p = pk.boyutlandir(hc.BORPIL_A)
     s = sm.surus_simulasyonu(p, T_ortam_C=20, isitici_hedef_C=None)
     assert 350 < s.menzil_km < 600
     assert 12 < s.tuketim_kWh_100km < 20
     assert s.T_bitis_C > s.T_baslangic_C  # I²R ile kendi kendine ısınma
-    soguk = sm.surus_simulasyonu(p, T_ortam_C=-10, isitici_hedef_C=25, isitici_guc_kW=6)
+    assert s.guc_kisiti_s == 0
+    # Enerji dengesi: kullanılan (E·Δsoc) = uç enerjisi + I²R kaybı (±%1)
+    kullanilan = p.gercek_enerji_kWh * p.gereksinim.kullanilabilir_soc_penceresi
+    assert s.terminal_enerji_kWh < kullanilan
+    assert (kullanilan - s.terminal_enerji_kWh) / kullanilan < 0.06
+    soguk = sm.surus_simulasyonu(p, T_ortam_C=-10, isitici_hedef_C=35, isitici_guc_kW=6)
     assert soguk.menzil_km < s.menzil_km
-    assert soguk.V_min_hucre > 2.0
+    assert soguk.isitici_kWh > 3.0
+    assert soguk.V_min_hucre >= sm.v_min_hucre(p.hucre) - 1e-6
+
+
+def test_soguk_guc_acigi_kaydedilir():
+    p = pk.boyutlandir(hc.BORPIL_A)
+    s = sm.surus_simulasyonu(p, T_ortam_C=-20, isitici_hedef_C=None)
+    assert s.guc_kisiti_s > 0 and s.guc_acigi_kWh > 0
+    assert s.V_min_hucre == pytest.approx(sm.v_min_hucre(p.hucre), abs=1e-6)
+
+
+def test_dusuk_gerilimli_kimyada_guc_ve_desarj_calisir():
+    p = pk.boyutlandir(hc.BORPIL_S)
+    assert sm.maks_guc_kW(p, 60) > 0
+    Ah, V = sm.sabit_akim_desarj(p.hucre, 0.5, 60)
+    assert len(Ah) > 10
 
 
 # --- Karşılaştırma --------------------------------------------------------------

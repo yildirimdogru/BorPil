@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .elektrolit import alan_direnci_ohm_cm2, arrhenius, kritik_akim_yogunlugu_mA_cm2
+from .elektrolit import EA_ARAYUZ_EV, alan_direnci_ohm_cm2, arrhenius, kritik_akim_yogunlugu_mA_cm2
 from .hucre import HucreSonucu
 from .paket import PaketSonucu
 from .sabitler import C_TO_K
@@ -20,18 +20,24 @@ from .sabitler import C_TO_K
 # Elektrokimyasal eşdeğer devre
 # ---------------------------------------------------------------------------
 
+def _ocv_sekil(s: np.ndarray) -> np.ndarray:
+    return 0.04 * (2 * s - 1) + 0.10 * np.tanh((s - 0.96) * 60) - 0.35 * np.exp(-s * 30)
+
+
+# Şekil fonksiyonunun SOC üzerindeki ortalaması; OCV'nin ortalaması tam V_ort olsun diye çıkarılır
+_OCV_OFSET = float(np.trapezoid(_ocv_sekil(np.linspace(0, 1, 20001)), dx=1 / 20000))
+
+
 def ocv(soc: np.ndarray | float, V_ort: float) -> np.ndarray | float:
     """
     Faz-geçişli (iki fazlı) katotlar (NVP, NaCrO2) için düz platolu OCV eğrisi:
-    hafif eğim + dolu/boş uçlarda dik kollar. SOC 0-1.
+    hafif eğim + dolu/boş uçlarda dik kollar. SOC 0-1. ∫₀¹ OCV ds = V_ort (enerji tutarlılığı).
     """
     s = np.clip(np.asarray(soc, dtype=float), 0.0, 1.0)
-    return (V_ort + 0.04 * (2 * s - 1)
-            + 0.10 * np.tanh((s - 0.96) * 60)
-            - 0.35 * np.exp(-s * 30))
+    return V_ort + _ocv_sekil(s) - _OCV_OFSET
 
 
-def asr_sicaklik(h: HucreSonucu, T_C: float, Ea_arayuz_eV: float = 0.45) -> float:
+def asr_sicaklik(h: HucreSonucu, T_C: float, Ea_arayuz_eV: float = EA_ARAYUZ_EV) -> float:
     """Toplam ASR(T): ayırıcı (Arrhenius, SE) + katot kompozit (SE ile ölçekli) + arayüz (Ea_arayuz)."""
     t = h.tasarim
     T0 = t.calisma_sicakligi_C
@@ -44,12 +50,16 @@ def asr_sicaklik(h: HucreSonucu, T_C: float, Ea_arayuz_eV: float = 0.45) -> floa
 
 
 def hucre_direnci_ohm(h: HucreSonucu, T_C: float) -> float:
-    alan_cm2 = (h.tasarim.pouch_en_mm * h.tasarim.pouch_boy_mm / 100.0) * 2 * h.katman_sayisi
-    return asr_sicaklik(h, T_C) / alan_cm2
+    return asr_sicaklik(h, T_C) / h.elektrot_alani_cm2
 
 
-def maks_guc_kW(p: PaketSonucu, T_C: float, soc: float = 0.5, V_min_hucre: float = 2.3,
-                j_kritik_25C_mA_cm2: float = 3.0, desarj_toleransi: float = 2.0,
+def v_min_hucre(h: HucreSonucu, oran: float = 0.70) -> float:
+    """Deşarj kesim gerilimi: nominal gerilimin sabit bir oranı (3.37 V → 2.36 V; 1.8 V → 1.26 V)."""
+    return oran * h.gerilim_V
+
+
+def maks_guc_kW(p: PaketSonucu, T_C: float, soc: float = 0.5, V_min_hucre: float | None = None,
+                j_kritik_25C_mA_cm2: float | None = None, desarj_toleransi: float = 2.0,
                 j_tavan_mA_cm2: float = 12.0) -> float:
     """
     Verilen sıcaklık ve SOC'de 10 s tepe deşarj gücü. Üç sınırın en küçüğü alınır:
@@ -58,12 +68,15 @@ def maks_guc_kW(p: PaketSonucu, T_C: float, soc: float = 0.5, V_min_hucre: float
           `desarj_toleransi` kat esneklik) × elektrot alanı;
       (3) katot tavanı: kompozit katotta katı hâl difüzyonu/ısıl sınır için mutlak j tavanı (~4C).
     """
+    if V_min_hucre is None:
+        V_min_hucre = v_min_hucre(p.hucre)
     R = hucre_direnci_ohm(p.hucre, T_C)
     U = float(ocv(soc, p.hucre.gerilim_V))
     I_omik = max(0.0, (U - V_min_hucre) / R)
-    alan_cm2 = (p.hucre.tasarim.pouch_en_mm * p.hucre.tasarim.pouch_boy_mm / 100.0) * 2 * p.hucre.katman_sayisi
-    j_arayuz = min(kritik_akim_yogunlugu_mA_cm2(T_C, J_ref=j_kritik_25C_mA_cm2) * desarj_toleransi, j_tavan_mA_cm2)
-    I_arayuz = j_arayuz * alan_cm2 / 1e3
+    j_kritik = (kritik_akim_yogunlugu_mA_cm2(T_C) if j_kritik_25C_mA_cm2 is None
+                else kritik_akim_yogunlugu_mA_cm2(T_C, J_ref=j_kritik_25C_mA_cm2))
+    j_arayuz = min(j_kritik * desarj_toleransi, j_tavan_mA_cm2)
+    I_arayuz = j_arayuz * p.hucre.elektrot_alani_cm2 / 1e3
     if I_omik <= I_arayuz:
         P_hucre = V_min_hucre * I_omik
     else:
@@ -132,28 +145,36 @@ def tekerlek_gucu_W(arac: Arac, toplam_kutle: float, v: np.ndarray, a: np.ndarra
 @dataclass
 class SurusSonucu:
     menzil_km: float
-    tuketim_kWh_100km: float
+    tuketim_kWh_100km: float          # bataryadan çekilen enerji (ısıtıcı dâhil) / mesafe
     T_baslangic_C: float
     T_bitis_C: float
     V_min_hucre: float
     isi_uretimi_ort_W: float
     toplam_kutle_kg: float
+    isitici_kWh: float = 0.0          # ısıtıcının bataryadan çektiği enerji
+    guc_kisiti_s: float = 0.0         # güç talebinin karşılanamadığı toplam süre
+    guc_acigi_kWh: float = 0.0        # karşılanamayan enerji (talep − sağlanan)
+    terminal_enerji_kWh: float = 0.0  # ∫ V·I dt (uç enerjisi)
 
 
 def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20.0,
-                      T_baslangic_C: float | None = None, isitici_hedef_C: float | None = 25.0,
-                      isitici_guc_kW: float = 3.0, soc_bitis: float = 0.05) -> SurusSonucu:
+                      T_baslangic_C: float | None = None, isitici_hedef_C: float | None = 35.0,
+                      isitici_guc_kW: float = 6.0, soc_bitis: float | None = None) -> SurusSonucu:
     """
     Çevrimi SOC bitene kadar tekrarlayarak menzil hesaplar. Isıl model: m·c·dT/dt = I²R + P_ısıtıcı − UA·(T−T_ortam).
-    Isıtıcı: hücre sıcaklığı hedefin altındaysa (bataryadan beslenerek) çalışır — soğuk iklim senaryosu.
+    Isıtıcı: hücre sıcaklığı hedefin altındaysa (bataryadan beslenerek) çalışır — "sıcak batarya" stratejisi.
+    SOC bitişi paketin kullanılabilir SOC penceresinden alınır (varsayılan %92 → soc_bitis 0.08).
+    Güç talebi omik/gerilim sınırını aşarsa akım kırpılır, açık kaydedilir ve o adımdaki mesafe
+    sağlanan/talep edilen güç oranıyla ölçeklenir (araç yavaşlar).
     """
+    if soc_bitis is None:
+        soc_bitis = 1.0 - p.gereksinim.kullanilabilir_soc_penceresi
     t, v = wltp_benzeri_cevrim()
     dt = float(t[1] - t[0])
     a = np.gradient(v, dt)
     toplam_kutle = arac.glider_kutle_kg + arac.yuk_kg + p.paket_kutle_kg
     P_teker = tekerlek_gucu_W(arac, toplam_kutle, v, a)
     P_bat_cevrim = np.where(P_teker >= 0, P_teker / arac.eta_tahrik, P_teker * arac.eta_rejen) + arac.yardimci_guc_W
-    mesafe_cevrim_km = float(np.trapezoid(v, t) / 1e3)
 
     E_kWh = p.gercek_enerji_kWh
     soc = 1.0
@@ -161,9 +182,14 @@ def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20
     C_isil = p.paket_kutle_kg * p.gereksinim.paket_isi_kapasitesi_kJ_kgK * 1e3  # J/K
     UA = p.isi_kaybi_W_per_K
     n = p.hucre_sayisi
+    V_kesim = v_min_hucre(p.hucre)
     V_min = 10.0
     mesafe_km = 0.0
     q_toplam_J = 0.0
+    isitici_J = 0.0
+    kisit_s = 0.0
+    acik_J = 0.0
+    terminal_J = 0.0
     sure_s = 0.0
     kapasite_As = p.hucre.hucre_kapasite_Ah * 3600.0
     bitti = False
@@ -177,15 +203,26 @@ def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20
             P_h = (P_bat + P_isitici) / n            # hücre başına güç (seri-paralel simetrik)
             # V·I = P_h, V = U − I·R  →  R·I² − U·I + P_h = 0  (küçük kök = kararlı çözüm)
             disc = U * U - 4 * R_h * P_h
-            I_h = U / (2 * R_h) if disc < 0 else (U - np.sqrt(disc)) / (2 * R_h)
+            I_maks = (U - V_kesim) / R_h              # kesim gerilimine izin veren azami deşarj akımı
+            if P_h > 0 and (disc < 0 or (U - np.sqrt(disc)) / (2 * R_h) > I_maks):
+                I_h = I_maks                          # güç kısıtı: kesim geriliminde çalış
+                P_saglanan = V_kesim * I_h
+                acik_J += (P_h - P_saglanan) * n * dt
+                kisit_s += dt
+                mesafe_orani = max(0.0, (P_saglanan * n - P_isitici) / max(P_bat, 1.0))
+            else:
+                I_h = (U - np.sqrt(disc)) / (2 * R_h)
+                mesafe_orani = 1.0
             V_h = U - I_h * R_h
             if P_h > 0:
                 V_min = min(V_min, V_h)
             soc -= I_h * dt / kapasite_As
             Q = I_h**2 * R_h * n
             q_toplam_J += Q * dt
+            isitici_J += P_isitici * dt
+            terminal_J += V_h * I_h * n * dt
             T += (Q + P_isitici - UA * (T - T_ortam_C)) * dt / C_isil
-            mesafe_km += v[i] * dt / 1e3
+            mesafe_km += v[i] * dt / 1e3 * min(1.0, mesafe_orani)
             sure_s += dt
             if soc <= soc_bitis:
                 bitti = True
@@ -200,6 +237,10 @@ def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20
         V_min_hucre=V_min,
         isi_uretimi_ort_W=q_toplam_J / max(1.0, sure_s),
         toplam_kutle_kg=toplam_kutle,
+        isitici_kWh=isitici_J / 3.6e6,
+        guc_kisiti_s=kisit_s,
+        guc_acigi_kWh=acik_J / 3.6e6,
+        terminal_enerji_kWh=terminal_J / 3.6e6,
     )
 
 
@@ -210,5 +251,5 @@ def sabit_akim_desarj(h: HucreSonucu, c_orani: float, T_C: float, n_nokta: int =
     soc = np.linspace(1.0, 0.0, n_nokta)
     V = ocv(soc, h.gerilim_V) - I * R
     Ah = (1 - soc) * h.hucre_kapasite_Ah
-    gecerli = V > 2.0
+    gecerli = V > 0.6 * h.gerilim_V
     return Ah[gecerli], V[gecerli]
