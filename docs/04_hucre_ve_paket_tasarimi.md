@@ -33,7 +33,7 @@ Tüm sayılar `python -m borpil.cli rapor` çıktısından alınmıştır (`cikt
 | Enerji | 75.8 kWh brüt, 69.7 kWh kullanılabilir (%92 SOC penceresi) |
 | Kütle / hacim | **521 kg / 362 L** → 145 Wh/kg, 209 Wh/L (hücre→paket 0.76 / 0.62) |
 | Sürekli güç | 80 kW (≈1C, 3.2 mA/cm²) |
-| Tepe güç (10 s) | 200 kW hedef; model 45 °C'de ~250 kW, 25 °C'de ~120 kW, −10 °C'de ~20 kW |
+| Tepe güç (10 s) | 200 kW hedef; model 45 °C'de ~260 kW, 25 °C'de ~125 kW, −10 °C'de ~12 kW |
 | Hızlı şarj | 1. nesil 75 kW (1C; Na kaplama kritik akım yoğunluğu ile sınırlı) |
 | Bor / Na / V | 72 / 93 / 46 kg |
 | Maliyet (varsayımsal) | 15.7 kUSD → 207 USD/kWh (SE 50 USD/kg); 140 USD/kWh (SE 20 USD/kg) |

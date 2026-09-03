@@ -54,7 +54,7 @@ kararlılık penceresi, 173 Wh/kg), **B** (karba-kloso-borat + 3.9 V katot, 261 
   Hedef: 2. nesilde 3 mA/cm² → 6 mA/cm².
 - **Hidroborat oksidasyon sınırı ~3 V** (termodinamik); NVP'nin 3.37 V'u pasifleştirici
   arayüzle çalışır (Asakura 2020 türü). A0 (NaCrO₂) bu riski taşımaz.
-- **Soğuk performans:** −10 °C'de tepe güç ~20 kW; sürüş öncesi ön ısıtma gerekir (5 kWh,
+- **Soğuk performans:** −10 °C'de tepe güç ~12 kW; sürüş öncesi ön ısıtma gerekir (5 kWh,
   şebekeden). Li-iyon da benzer ön şartlandırma yapar ama daha az.
 - **Maliyet:** kloso-borat tuzlarının bugünkü fiyatı laboratuvar ölçeğindedir. Ekonomik
   eşik SE ≤ 20–25 USD/kg; bu NaBH₄ → B₂H₆/B₁₀H₁₄ → Na₂B₁₂H₁₂/Na₂B₁₀H₁₀ rotasının
