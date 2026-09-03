@@ -107,7 +107,7 @@ NA2_B12_B10 = KatiElektrolit(
     sigma_ref=9e-4, T_ref=293.15, Ea=0.40,
     T_gecis=None,
     oksidasyon_siniri_V=3.0, oksidasyon_pasif_V=4.0,
-    kaynak="Duchêne ve ark., Energy Environ. Sci. 2017; Asakura ve ark., EES 2020 (4 V pasifleşme)",
+    kaynak="Duchêne ve ark., Chem. Commun. 2017 (elektrolit) ve Energy Environ. Sci. 2017 (3 V tam hücre); Asakura ve ark., EES 2020 (4 V pasifleşme)",
     notlar="Oda sıcaklığında ~1 mS/cm; 60 °C'de ~5 mS/cm. Na metaline karşı kararlı, soğuk preslenebilir.",
 )
 
@@ -133,7 +133,7 @@ NA2_CB9_CB11 = KatiElektrolit(
     sigma_ref=0.07, T_ref=298.15, Ea=0.25,
     T_gecis=None,
     oksidasyon_siniri_V=3.5, oksidasyon_pasif_V=4.2,
-    kaynak="Tang ve ark., Energy Environ. Sci. 2016 (sıvı benzeri iletkenlik, 70 mS/cm)",
+    kaynak="Tang ve ark., ACS Energy Lett. 2016 (karışık anyon katı çözeltisi, ~70 mS/cm @ oda sıcaklığı)",
     notlar="Bilinen en iletken Na katı elektrolitlerinden biri; maliyet kısıtı nedeniyle 2. nesil.",
 )
 
