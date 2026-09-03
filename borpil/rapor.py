@@ -104,7 +104,7 @@ def grafik_guc_ve_desarj(cikti: Path, p: pk.PaketSonucu) -> Path:
         axes[0].plot(T, [sm.maks_guc_kW(p, t, soc) for t in T], label=f"SOC {soc:.0%}")
     axes[0].axhline(p.gereksinim.tepe_guc_kW, ls="--", c="k", lw=0.8)
     axes[0].text(-18, p.gereksinim.tepe_guc_kW * 1.03, f"Hedef tepe güç {p.gereksinim.tepe_guc_kW:.0f} kW", fontsize=7)
-    axes[0].set_xlabel("Paket sıcaklığı (°C)"); axes[0].set_ylabel("10 s tepe güç (kW), V_min = 2.3 V/hücre")
+    axes[0].set_xlabel("Paket sıcaklığı (°C)"); axes[0].set_ylabel(f"10 s tepe güç (kW), V_min = {sm.v_min_hucre(p.hucre):.2f} V/hücre")
     axes[0].set_title("Güç yeteneği — sıcaklık (omik ∧ kritik akım sınırı)"); axes[0].legend(fontsize=7)
     axes[0].grid(alpha=0.3); axes[0].set_ylim(0, None)
 
@@ -209,7 +209,7 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
     md.append("| Elektrolit | σ(−10 °C) mS/cm | σ(25 °C) | σ(45 °C) | σ(60 °C) | Ea (eV) | ASR 30 µm @45 °C (Ω·cm²) |\n|---|---:|---:|---:|---:|---:|---:|")
     for ad, se in mz.KATI_ELEKTROLITLER.items():
         s = [float(el.iletkenlik_C(se, T)) * 1e3 for T in (-10, 25, 45, 60)]
-        md.append(f"| {ad} | {s[0]:.3g} | {s[1]:.3g} | {s[2]:.3g} | {s[3]:.3g} | {se.Ea:.2f} | {el.alan_direnci_ohm_cm2(se, 30, 45):.2f} |")
+        md.append(f"| {ad} | {s[0]:.3g} | {s[1]:.3g} | {s[2]:.3g} | {s[3]:.3g} | {se.Ea:.2f} | {el.alan_direnci_ohm_cm2(se, 30, 45):.3g} |")
     geo = ge.b12h12_geometrisi(); bos = ge.na_bosluk_analizi(mz.NA2B12H12.yogunluk, mz.NA2B12H12.molar_kutle)
     md.append("")
     md.append(f"Geometri: {geo}. Süperiyonik bcc Na₂B₁₂H₁₂ kafesi a = {bos['kafes_a_A']:.2f} Å; anyon sert-küre yarıçapı "

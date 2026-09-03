@@ -31,9 +31,9 @@ kısıt cevher değil, **hidroborat sentez kapasitesi**dir.
 
 | Malzeme | Sentez | Pratik | Not |
 |---|---|---|---|
-| **Na₃V₂(PO₄)₃/C (NVP)** | Sol-jel veya katı hâl; V₂O₅ + NaH₂PO₄ + sitrik asit, 750–800 °C Ar | 110 mAh/g, 3.37 V | Karbon kaplı (in-situ) parçacık, D50 ~2–5 µm. Hücrede 2.7 kg/kWh NVP, 0.6 kg/kWh V. |
+| **Na₃V₂(PO₄)₃/C (NVP)** | Sol-jel veya katı hâl; V₂O₅ + NaH₂PO₄ + sitrik asit, 750–800 °C Ar | 110 mAh/g, 3.37 V | Karbon kaplı (in-situ) parçacık, D50 ~2–5 µm. Hücrede 2.7 kg/kWh NVP, 0.6 kg/kWh V. Kompozitteki iletken karbon hidroborat oksidasyonunu hızlandırır → kaplama şart. |
 | NaCrO₂ | Cr₂O₃ + Na₂CO₃, 900 °C Ar | 115 mAh/g, 2.95 V | Cr(VI) oluşumunu önlemek için inert atmosfer; nem hassas. |
-| P2-Na₂/₃Fe₁/₂Mn₁/₂O₂ | Fe₂O₃ + Mn₂O₃ + Na₂CO₃, 900 °C hava | 150 mAh/g, 2.75 V | Ucuz, kritik metalsiz; havada Na kaybı → kuru oda saklama. |
+| P2-Na₂/₃Fe₁/₂Mn₁/₂O₂ | Fe₂O₃ + Mn₂O₃ + Na₂CO₃, 900 °C hava | 120 mAh/g (≤ 4.0 V), 2.75 V | Ucuz, kritik metalsiz; 4.3 V'a kadar 190 mAh/g ama P2→O2/"Z" geçişi ve elektrolit penceresi 4.0 V tavanı zorlar; havada Na kaybı → kuru oda. |
 | Na₃V₂(PO₄)₂F₃ (2. nesil) | NVP + NaF, hidrotermal/katı hâl | 120 mAh/g, 3.9 V | Yalnız karba-kloso-borat + pasifleştirici arayüzle. |
 
 ### Katot kompozit reçetesi (kütle)
@@ -48,7 +48,9 @@ sınırlayan bir pasif tabakaya dönüştürmek.
 ## 3.3 Ayırıcı (katı elektrolit filmi)
 
 - **Yaş proses:** SE tozu + %2–3 NBR, ksilen/toluen; Mylar taşıyıcı üzerine slot-die döküm,
-  80 °C kurutma, 30 µm hedef (1. nesil), 20 µm (2. nesil). Sıvı bazlı ince film, katı hâl
+  80 °C kurutma. **Kalınlık hedefi 30 µm** (tasarım noktası); literatürde kendi başına duran
+  hidroborat filmleri henüz 50–100 µm sınıfındadır, bu yüzden alt tahmin varyantı 60 µm ile
+  hesaplanır (175 Wh/kg). 30 µm, sülfür katı hâl hatlarında ulaşılmış bir değerdir. Sıvı bazlı ince film, katı hâl
   sülfür pillerden aktarılan olgun bir yöntemdir.
 - **Kuru proses (alternatif):** SE + %0.5 PTFE lif oluşturma → kalender (Maxwell tipi); çözücü
   yok, daha yüksek yoğunluk.
@@ -59,8 +61,11 @@ sınırlayan bir pasif tabakaya dönüştürmek.
 ## 3.4 Anot
 
 - **Na metal (1. nesil):** 20 µm "fazla" Na, Al folyo üzerine ekstrüzyon/hadde ile lamine
-  (Na Al ile alaşım yapmaz; erime noktası 98 °C → sıcak lamine kolay). Deşarj sonu bile
+  (Na Al ile alaşım yapmaz; erime noktası 97.8 °C → sıcak lamine kolay). Deşarj sonu bile
   Al'de %100 sıyırma olmaz (fazla Na); şarjda katottan gelen Na (26 µm eşdeğeri) kaplanır.
+  20 µm Na folyo üretimi ölçekli değildir; alt tahmin varyantı 50 µm ile hesaplanır.
+  Kütle muhasebesi: döngüsel Na katot formülünde (Na₃V₂(PO₄)₃) sayılır, anot kütlesine yalnız
+  fazlalık eklenir (kütle korunumu); kalınlıkta şarjlı (maksimum) hâl alınır.
 - **Anotsuz (2. nesil):** Al üzerine ~1 µm karbon/Ag tohum tabakası; ilk şarjda Na oluşur.
   Enerji yoğunluğu %8 artar; kritik akım yoğunluğu doğrulaması gerekir.
 - **Sert karbon (varyant C):** biyokütle/asfalt öncülü, 1300 °C; %68 aktif + %27 SE kompozit.
@@ -84,12 +89,14 @@ yalnız laminasyon istasyonunda.
 
 | Element/malzeme | kg / paket | USD/kg (varsayım) | Not |
 |---|---:|---:|---|
-| Kloso-borat SE (B %69) | ~105 | 50 (hedef 20) | Maliyet belirleyici; ölçek ve rota |
-| NVP | ~205 | 16 | V₂O₅ fiyatına duyarlı |
-| Na metal (anot, şarjlı hâl) | ~33 (20 µm fazla + döngüsel) | 3 | |
-| Al folyo | ~24 | 5 | Cu yok |
+| Kloso-borat SE (B %68) | ~107 | 50 (hedef 20; bugün >1000) | Maliyet belirleyici; ölçek ve rota |
+| NVP | ~205 | 22 (aralık 18–30) | V₂O₅ fiyatına duyarlı; 46 kg V |
+| Na metal (yalnız fazlalık; döngüsel Na katotta) | ~14 | 3 | Toplam Na (SE + katot + fazla) 73 kg |
+| Al folyo | ~23 | 5 | Cu yok |
 | Karbon, bağlayıcı | ~14 | 10–15 | |
 
-Model: 119 USD/kWh malzeme (SE 50 USD/kg) → 185 USD/kWh hücre (×1.55 imalat) → 207 USD/kWh
-paket. **SE 20 USD/kg** senaryosunda malzeme ~78, hücre ~120, paket ~140 USD/kWh: LFP ile
-rekabetçi bölge. Duyarlılık grafiği: `cikti/duyarlilik.png`.
+Model: 134 USD/kWh malzeme (SE 50 USD/kg) → 208 USD/kWh hücre (×1.55 imalat) → 230 USD/kWh
+paket. Duyarlılık (paket, USD/kWh): SE 20 → **165**, 50 → 230, 100 → 340, 200 → 558.
+SE tek başına malzeme maliyetinin ~%55'idir (1.41 kg SE/kWh). LFP ile rekabet için SE
+≤ 20–25 USD/kg **ve** kompozitte SE payının %25 → %18'e düşürülmesi gerekir. Grafik:
+`cikti/duyarlilik.png` (logaritmik fiyat ekseni, 10–200 USD/kg).

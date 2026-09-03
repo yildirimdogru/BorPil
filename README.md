@@ -11,9 +11,9 @@ kütlesinin ~%19'u bor.
 
 | | BorPil-A (model) | LFP | NMC811 |
 |---|---:|---:|---:|
-| Hücre | 191 Wh/kg, 337 Wh/L | 170 / 380 | 265 / 700 |
-| 75 kWh paket | 521 kg, 0 kg Li, 72 kg B | 613 kg, 6.8 kg Li | 393 kg, 8.2 kg Li, 56 kg Ni |
-| WLTP-benzeri menzil (C-segment) | ~490 km | | |
+| Hücre | 201 Wh/kg, 337 Wh/L (alt tahmin 175 / 276) | 170 / 380 | 265 / 700 |
+| 75 kWh paket | 523 kg, 0 kg Li, 72 kg B | 613 kg, 6.8 kg Li | 393 kg, 8.2 kg Li, 56 kg Ni |
+| WLTP-benzeri menzil (C-segment, 20 °C) | ~475 km | | |
 | Yanıcı elektrolit | yok | var | var |
 
 ## Depo yapısı
@@ -25,7 +25,7 @@ borpil/            Python paketi (modeller)
   termodinamik.py    Gibbs → E°, Nernst, bor-hava & DBFC teorik sınırları
   elektrolit.py      kloso-borat iletkenliği (Arrhenius, faz geçişi), ASR, kritik akım
   geometri.py        [B12H12]2- ikosahedronu, kafes boşluk analizi, pouch/paket geometrisi
-  hucre.py           katman yığını → Wh/kg, Wh/L, element bütçesi, maliyet (varyantlar A, A0, A-Fe, B, C, S)
+  hucre.py           katman yığını → Wh/kg, Wh/L, element bütçesi, maliyet (varyantlar A, A-alt, A0, A-Fe, B, C, S)
   paket.py           EV paketi boyutlandırma (seri/paralel, kütle, hacim, ısıl, maliyet)
   simulasyon.py      OCV+R eşdeğer devre, toplu ısıl model, WLTP-benzeri sürüş çevrimi, güç haritası
   karsilastirma.py   Li-iyon ile karşılaştırma tablosu
@@ -37,7 +37,7 @@ docs/              tasarım dokümanları (Türkçe)
   03_malzeme_ve_uretim.md         sentez rotaları, reçeteler, proses akışı, maliyet
   04_hucre_ve_paket_tasarimi.md   hücre/paket/araç sayıları, ısıl strateji, BMS
   05_guvenlik_cevre_saglik.md     güvenlik, toksikoloji, yaşam döngüsü
-  06_riskler_trl_yol_haritasi.md  TRL, risk kaydı, hakem bulguları, doğrulama planı, KPI
+  06_riskler_trl_yol_haritasi.md  TRL, risk kaydı, bağımsız hakem bulguları (21 madde), doğrulama planı, KPI
 cikti/             otomatik üretilen rapor (RAPOR.md) ve grafikler
 tests/             birim testleri
 ```
@@ -47,10 +47,10 @@ tests/             birim testleri
 ```bash
 pip install -r requirements.txt
 python -m borpil.cli termo                 # teorik sınırlar (bor-hava, DBFC, metal-hava kıyas)
-python -m borpil.cli hucre A               # hücre yığın modeli (A, A0, A-Fe, B, C, S)
+python -m borpil.cli hucre A               # hücre yığın modeli (A, A-alt, A0, A-Fe, B, C, S)
 python -m borpil.cli hucre A --ayirici 20 --alan-kapasitesi 4 --sicaklik 60
 python -m borpil.cli paket A --kwh 75 --volt 400
-python -m borpil.cli surus A --ortam -10 --isitici 25
+python -m borpil.cli surus A --ortam -10 --isitici 35
 python -m borpil.cli rapor                 # cikti/RAPOR.md + grafikler
 python -m pytest -q
 ```

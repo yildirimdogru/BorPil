@@ -33,7 +33,9 @@ koda bağlıdır; kod değişirse rapor değişir.
 4. **Parametrik modelleme** (A3, A4, A6): katman yığını → hücre → paket → araç. Her seviye
    ayrı modül; varsayımlar veri sınıflarında açık alanlar olarak tutulur.
 5. **Doğrulama** (H1, H2): birim testleri (`tests/`), literatürle çapraz kontrol, bağımsız
-   el hesabı. Bulgular ve düzeltmeler `docs/06`'da kayıt altına alınır.
+   el hesabı. İki hakem ajan kör inceleme yaptı; 10 "düzeltilmesi gereken" ve 4 "kesin hata"
+   bulgusu kodda giderildi, sorgulanabilir varsayımlar band/duyarlılık olarak rapora işlendi.
+   Bulgular ve düzeltmeler `docs/06 §6.3`'te kayıt altındadır.
 6. **Dürüstlük ilkesi.** Maliyet ve ömür gibi henüz kanıtlanmamış büyüklükler "varsayım"
    olarak işaretlenir (`maliyet_varsayim` alanı). Rapor, üstünlükleri kadar sınırları da yazar.
 
@@ -47,4 +49,5 @@ koda bağlıdır; kod değişirse rapor değişir.
 | K4 | Katot: NVP (ana), NaCrO₂ (muhafazakâr), Na-Fe-Mn oksit (düşük maliyet) | NVP: düz 3.37 V platosu, düşük hacim değişimi; NaCrO₂: kloso-borat penceresinde kanıtlanmış tam hücre; Fe/Mn: vanadyum riskini sıfırlar. |
 | K5 | Anot: Na metal (ana), sert karbon (güvenli varyant) | Na metal en yüksek enerji; kloso-borat Na'ya kararlı. Sert karbon dendrit riskini kaldırır, %25 enerji kaybı. |
 | K6 | Al akım toplayıcı her iki tarafta | Na, Al ile alaşım yapmaz → Cu gereksiz (maliyet, kütle). |
-| K7 | Çalışma penceresi 25–60 °C, tasarım noktası 45 °C | Kloso-borat iletkenliği sıcaklıkla artar (Ea ≈ 0.4 eV); yanıcı elektrolit olmadığı için ısıl kaçak riski yok, yalıtım + ısıtıcı ile yönetim. |
+| K7 | Çalışma penceresi 35–60 °C (ısıtıcı hedefi 35 °C), hücre tasarım noktası 45 °C | Kloso-borat iletkenliği sıcaklıkla artar (Ea ≈ 0.4 eV); yanıcı elektrolit olmadığı için ısıl kaçak riski yok, yalıtım + ısıtıcı ile yönetim. Isıtıcı %3 menzil karşılığında tepe gücü 3× artırır. |
+| K8 | Sonuçlar tasarım noktası + muhafazakâr alt tahmin (A-alt) olarak **band** hâlinde raporlanır | Hakem H1 bulgusu: 30 µm SE / 20 µm Na / 15 Ω·cm² varsayımları üst sınırdır; 60 µm / 50 µm / 30 Ω·cm² ile 175 Wh/kg. |

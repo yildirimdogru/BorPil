@@ -17,32 +17,37 @@ ailelerinden biridir ve Li-iyon'daki yanıcı organik elektrolitin yerini alır.
 
 ## Anahtar sayılar (modelden; `borpil rapor`)
 
-| Büyüklük | BorPil-A (1. nesil) | Li-iyon LFP | Li-iyon NMC811 |
-|---|---:|---:|---:|
-| Hücre enerji yoğunluğu | **191 Wh/kg, 337 Wh/L** | 170 Wh/kg, 380 Wh/L | 265 Wh/kg, 700 Wh/L |
-| 75 kWh paket kütlesi | **521 kg** (145 Wh/kg) | ~613 kg | ~393 kg |
-| Lityum | **0 kg** | 6.8 kg | 8.2 kg |
-| Kobalt / Nikel | **0 / 0** | 0 / 0 | 6.8 / 56 kg |
-| Bor (paket başına) | **72 kg** | 0 | 0 |
-| Yanıcı sıvı elektrolit | **yok** | var | var |
-| WLTP-benzeri menzil (C-segment, 20 °C) | **~490 km** | — | — |
-| Çalışma sıcaklığı | 25–60 °C (soğukta düşük güçle çalışır, ısıtıcı ile 25 °C'ye) | | |
-| Hücre malzeme maliyeti (varsayım) | 119 USD/kWh (SE 50 USD/kg ile); SE 20 USD/kg'da ~78 | ~55 | ~70 |
+| Büyüklük | BorPil-A (1. nesil, tasarım noktası) | BorPil-A-alt (muhafazakâr alt tahmin) | Li-iyon LFP | Li-iyon NMC811 |
+|---|---:|---:|---:|---:|
+| Hücre enerji yoğunluğu | **201 Wh/kg, 337 Wh/L** | 175 Wh/kg, 276 Wh/L | 170 / 380 | 265 / 700 |
+| 75 kWh paket kütlesi / hacmi | **523 kg / 401 L** (145 Wh/kg) | 602 kg / 490 L | ~613 kg / 329 L | ~393 kg / 179 L |
+| Lityum | **0 kg** | 0 | 6.8 kg | 8.2 kg |
+| Kobalt / Nikel | **0 / 0** | 0 / 0 | 0 / 0 | 6.8 / 56 kg |
+| Bor (paket başına) | **72 kg** | 95 kg | 0 | 0 |
+| Yanıcı sıvı elektrolit | **yok** | yok | var | var |
+| WLTP-benzeri menzil (C-segment, 20 °C, ısıtıcı 35 °C) | **~475 km** (ısıtıcısız 490) | — | — | — |
+| Çalışma sıcaklığı | 35–60 °C hedef ("sıcak batarya"); soğukta ısıtıcı ile | | | |
+| Hücre malzeme maliyeti (varsayım) | 134 USD/kWh (SE 50 USD/kg); 92 (SE 20 USD/kg) | 158 | ~55 | ~70 |
 
-Varyantlar: **A-Fe** (vanadyumsuz, 195 Wh/kg, 91 USD/kWh malzeme), **A0** (NaCrO₂, kanıtlanmış
-kararlılık penceresi, 173 Wh/kg), **B** (karba-kloso-borat + 3.9 V katot, 261 Wh/kg — 2. nesil),
-**C** (sert karbon anot, dendritsiz, 144 Wh/kg), **S** (Na-S, 336 Wh/kg — uzun vade).
+Tasarım noktası (30 µm ayırıcı, 20 µm Na fazlası, 15 Ω·cm² arayüz) ile alt tahmin (60 µm,
+50 µm, 30 Ω·cm²) arasındaki **175–201 Wh/kg** bandı, 1. nesil için savunulabilir aralıktır.
+
+Varyantlar: **A-Fe** (vanadyumsuz, 176 Wh/kg, 105 USD/kWh malzeme), **A0** (NaCrO₂,
+kanıtlanmış pencere, 182 Wh/kg), **B** (karba-kloso-borat + 3.9 V katot, 277 Wh/kg — 2. nesil,
+pahalı), **C** (sert karbon anot, dendritsiz, 144 Wh/kg), **S** (Na-S, ~400 Wh/kg — spekülatif,
+uzun vade).
 
 ## Neden bu yol?
 
-1. **Bor içeriği anlamlı ve işlevsel.** Hücre kütlesinin ~%19'u bor; bor "katkı" değil,
+1. **Bor içeriği anlamlı ve işlevsel.** Hücre kütlesinin ~%20'si bor; bor "katkı" değil,
    iyonik iletimin kendisidir. 75 kWh'lik bir paket ~72 kg bor tüketir.
 2. **Li'siz ve kritik-metalsiz.** Na (tuz), B (Türkiye dünya rezervinin ~%73'üne sahip),
    V veya Fe/Mn, Al, C. Kobalt, nikel, bakır, lityum yok.
 3. **Güvenlik.** Yanıcı organik elektrolit yok. Kloso-boratlar kimyasal olarak olağanüstü
-   kararlı (B₁₂ kafesi aromatik-benzeri 3-boyutlu delokalizasyon), havada ve suda hidroliz
-   etmeyen tuzlar. Termal kaçak zinciri (elektrolit buharı + O₂ salımı) kırılır.
-4. **Sıcaklık dostu.** Kloso-borat iletkenliği sıcaklıkla artar; hücre 45–60 °C'de daha iyi
+   kararlı (B₁₂ kafesi aromatik-benzeri 3-boyutlu delokalizasyon), suda hidroliz etmeyen
+   tuzlar. Termal kaçak zinciri (elektrolit buharı + O₂ salımı) kırılır. Kalan risk Na metaldir
+   (`docs/05`).
+4. **Sıcaklık dostu.** Kloso-borat iletkenliği sıcaklıkla artar; hücre 35–60 °C'de daha iyi
    çalışır. Aktif soğutma yerine yalıtım + düşük güçlü ısıtıcı yeter.
 5. **Üretilebilirlik.** Kloso-boratlar yumuşak (soğuk preslenebilir), sülfür elektrolitler
    gibi H₂S salmaz, oksit elektrolitler gibi sinterleme gerektirmez. Mevcut pouch hattına
@@ -50,17 +55,23 @@ kararlılık penceresi, 173 Wh/kg), **B** (karba-kloso-borat + 3.9 V katot, 261 
 
 ## Sınırlar (açıkça)
 
-- **Hızlı şarj**, Na kaplama kritik akım yoğunluğu ile sınırlıdır (~1C, ≈75 kW, 45 °C'de).
-  Hedef: 2. nesilde 3 mA/cm² → 6 mA/cm².
-- **Hidroborat oksidasyon sınırı ~3 V** (termodinamik); NVP'nin 3.37 V'u pasifleştirici
-  arayüzle çalışır (Asakura 2020 türü). A0 (NaCrO₂) bu riski taşımaz.
-- **Soğuk performans:** −10 °C'de tepe güç ~12 kW; sürüş öncesi ön ısıtma gerekir (5 kWh,
-  şebekeden). Li-iyon da benzer ön şartlandırma yapar ama daha az.
-- **Maliyet:** kloso-borat tuzlarının bugünkü fiyatı laboratuvar ölçeğindedir. Ekonomik
-  eşik SE ≤ 20–25 USD/kg; bu NaBH₄ → B₂H₆/B₁₀H₁₄ → Na₂B₁₂H₁₂/Na₂B₁₀H₁₀ rotasının
-  ölçeklenmesini gerektirir.
+- **Hızlı şarj**, Na kaplama kritik akım yoğunluğu ile sınırlıdır: 1.5 mA/cm² @ 25 °C
+  (literatür 0.5–2), 4.5 mA/cm² @ 45 °C. 75 kW şarj (3.2 mA/cm²) yalnız ≥ 40 °C'de; soğuk pakette
+  önce ısıtma. Deneysel doğrulama zorunlu.
+- **Hidroborat oksidasyon sınırı ~3 V** (termodinamik); NVP'nin 3.37 V platosu ve ~3.8 V kesimi
+  pasifleştirici arayüzle (Asakura 2020 türü) çalışır; model bu durumu **uyarı** olarak bayraklar.
+  A0 (NaCrO₂, kesim 3.4 V) bu riski büyük ölçüde azaltır.
+- **Soğuk performans:** −10 °C'de tepe güç ~7 kW; sürüş öncesi ön ısıtma gerekir (−10 → 35 °C
+  için 6.5 kWh, tercihen şebekeden). Isıtıcı olmadan −20 °C stres senaryosunda ilk ~7 dakika
+  güç kısıtı yaşanır, paket I²R ile kendini ısıtır.
+- **Maliyet:** kloso-borat tuzlarının bugünkü fiyatı laboratuvar ölçeğindedir (>1000 USD/kg).
+  Paket maliyeti SE fiyatına doğrusal bağlı: 20 → 165, 50 → 230, 100 → 340, 200 → 558 USD/kWh.
+  Ekonomik eşik SE ≤ 20–25 USD/kg.
 - **Ömür:** katı hâl Na hücrelerinde 1000+ çevrim henüz laboratuvar ölçeğinde gösterilmiştir;
   ticari EV için 1500–3000 çevrim hedefi doğrulanmalıdır.
+- **Vanadyum:** 46 kg V/araç; 1 M araç/yıl küresel V üretiminin ~%40'ı olur → A-Fe yolu
+  stratejik olarak paralel yürütülür.
 
 Ayrıntılar: `docs/02` (kimya), `docs/03` (malzeme/üretim), `docs/04` (hücre/paket),
-`docs/05` (güvenlik/çevre), `docs/06` (riskler ve yol haritası), `cikti/RAPOR.md` (sayılar).
+`docs/05` (güvenlik/çevre), `docs/06` (riskler, hakem bulguları ve yol haritası),
+`cikti/RAPOR.md` (sayılar).

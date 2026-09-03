@@ -14,9 +14,11 @@ salımı → **yanıcı karbonat elektrolitin** yanması. BorPil'de:
 
 Kalan iki risk **Na metal** ve **hidrojen**dir:
 
-- **Na metal** (paket başına ~33 kg, hücrelerde dağılmış, 46 µm folyo): kılıf delinmesinde
-  hava/nem ile ekzotermik reaksiyon (Na + H₂O → NaOH + ½H₂). Ancak sıvı elektrolit yokluğunda
-  yayılacak yanıcı ortam yoktur; hasar yerel kalır. Pouch üstüne Al-laminat + tepside inert
+- **Na metal** (şarjlı hâlde paket başına ~35 kg: 14 kg fazlalık + ~21 kg döngüsel; hücrelerde
+  dağılmış, 46 µm folyo): kılıf delinmesinde hava/nem ile ekzotermik reaksiyon
+  (Na + H₂O → NaOH + ½H₂). "Yanıcı elektrolit yok" ifadesi hücreyi yanmaz kılmaz: erimiş Na
+  (e.n. 97.8 °C; 35–60 °C çalışma sıcaklığına marj ~40 K) + nem ciddi tehlikedir. Ancak sıvı
+  elektrolit yokluğunda yayılacak yanıcı ortam yoktur; hasar yerel kalır. Pouch üstüne Al-laminat + tepside inert
   köpük dolgu ile önlem. Çarpışma testinde (UN 38.3 T6 ezme, GB 38031 delme) referans:
   Na katı hâl hücreleri için ısıl kaçak yerine yerel ısınma beklenir; doğrulanacak (docs/06).
 - **Hidrojen:** kloso-boratlar hidroliz etmez (BH₄⁻'nin aksine). Yalnız > 400–500 °C'de
@@ -24,8 +26,10 @@ Kalan iki risk **Na metal** ve **hidrojen**dir:
   havalandırma kanalı bu senaryo için yeterlidir. DBFC modülünde ise NaBH₄ hidrolizi sürekli
   H₂ kaynağıdır → ayrı havalandırma ve H₂ sensörü zorunlu.
 
-Yüksek çalışma sıcaklığı (45–60 °C) güvenlik açısından avantajdır: elektrolitin ısıl kararlılığı
-bunun çok üzerinde, hücreler ısıl açıdan "soğuk" çalışır.
+Yüksek çalışma sıcaklığı (35–60 °C) elektrolit açısından sorunsuzdur (ısıl kararlılık çok
+üstte); tasarım sınırı Na'nın erime noktasıdır: BMS 80 °C'de gücü keser, 90 °C'de paketi ayırır.
+**Nem:** Na₂B₁₂H₁₂ hidrat (·4H₂O) oluşturur; hidrat hem iletkenliği düşürür hem Na ile
+reaksiyona girer → hermetik hücre, üretimde < %1 bağıl nem.
 
 ## 5.2 Toksikoloji
 

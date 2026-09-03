@@ -38,8 +38,9 @@ dört yol tarandı:
 Yüksek sıcaklık (veya anyon karışımıyla frustrasyona uğratılmış) fazda anyonlar bcc/fcc
 kafeste yerlerinde **hızla yeniden yönelir** (ps ölçeği). Na⁺ iyonları, 4 Na için 12 site
 (bcc Im-3m, 12d) gibi **düşük dolulukta** (1/3) tetrahedral sitelerde bulunur;
-`geometri.na_bosluk_analizi` bu siteler için ~0.93 Å boşluk yarıçapı verir (Na⁺ 1.02 Å):
-yani Na⁺ siteye tam oturmaz, "gevşek" durur → düşük göç engeli. Anyon dönmesi komşu siteler
+`geometri.na_bosluk_analizi` ölçülen yüksek-T kafesi (a = 7.9 Å; geçişte ~%15 hacim
+genleşmesi) için bu sitelerde ~1.00 Å boşluk yarıçapı verir — Na⁺ (1.02 Å) ile neredeyse
+birebir: iyon siteye tam oturur ama sıkışmaz, 2/3'ü boş komşu sitelere düşük engelle geçer. Anyon dönmesi komşu siteler
 arasındaki engeli anlık olarak düşürür ("paddle-wheel"). Ea ≈ 0.2–0.4 eV.
 
 Eş-molar **Na₂(B₁₂H₁₂)₀.₅(B₁₀H₁₀)₀.₅** karışımı (Duchêne 2017), iki anyonun boyut/şekil
@@ -72,29 +73,36 @@ Hücre düzeyinde (folyo, elektrolit, kılıf dâhil) model **191 Wh/kg** verir 
     Katot:  2O₂ + 4H₂O + 8e⁻ → 8OH⁻              E° = +0.40 V
     Toplam: NaBH₄ + 2O₂ → NaBO₂ + 2H₂O           E° = 1.64 V  (model: 1.647 V, ΔG°f'lerden)
 
-Teorik 5668 mAh/g, 9.3 kWh/kg NaBH₄. Pratik: %20 NaBH₄ / %10 NaOH çözeltisi, 1.0 V, %75
-faradaik kullanım → ~850 Wh/kg çözelti, ~530 Wh/kg sistem (tank+yığın). Yan reaksiyon
-(hidroliz, BH₄⁻ + 2H₂O → BO₂⁻ + 4H₂) hem yakıt kaybı hem H₂ güvenlik konusudur; alkali pH
-ve Au/Pd-Ni anot katalizörleriyle bastırılır. **NaBO₂ → NaBH₄ rejenerasyonu** (Mg veya
-elektrokimyasal indirgeme) teorik 9.3 kWh/kg, pratik verim %20–40 → gidiş-dönüş ~%16.
+Teorik 5668 mAh/g, 9.3 kWh/kg NaBH₄. Pratik: %20 NaBH₄ / %10 NaOH çözeltisi, yük altında
+0.85 V (0.7–0.9), %65 faradaik kullanım (%50–75) → ~630 Wh/kg çözelti, ~390 Wh/kg sistem
+(tank+yığın). Yan reaksiyon (hidroliz, BH₄⁻ + 2H₂O → BO₂⁻ + 4H₂) hem yakıt kaybı hem H₂
+güvenlik konusudur; alkali pH ve Au/Pd-Ni anot katalizörleriyle bastırılır. **NaBO₂ → NaBH₄
+rejenerasyonu** (Mg veya elektrokimyasal indirgeme) teorik 9.3 kWh/kg, pratik verim %15–35
+(ABD DOE'nin 2007 "no-go" kararının gerekçesi) → gidiş-dönüş ~%10.
 Sonuç: DBFC, elektrik depolamak için değil, **yerli bor yakıtıyla menzil uzatmak** için.
 Örnek boyutlandırma (`termodinamik.dbfc_menzil_uzatici`): 40 kg çözelti (8 kg NaBH₄) + 15 kW
-yığın + tank/BOP ≈ 160 kg → 34 kWh, **+227 km**, 3 dakikalık sıvı dolum; harcanan NaBO₂
+yığın + tank/BOP ≈ 160 kg → 25 kWh, **+167 km**, 3 dakikalık sıvı dolum; harcanan NaBO₂
 istasyonda toplanıp rejenerasyona gönderilir (kapalı bor döngüsü).
 
 ## 2.6 Isıl davranış ve Nernst etkisi
 
 - OCV sıcaklık katsayısı NVP için küçüktür (|dE/dT| < 0.3 mV/K; düz plato, faz geçişli
   reaksiyon). Isıl model bu yüzden yalnız I²R (Joule) terimini alır; entropik ısı ihmal edilir.
-- Sistem 45 °C'de çalışacak biçimde tasarlanmıştır: σ 3.1 mS/cm, 30 µm ayırıcı ASR ≈ 1 Ω·cm²,
-  toplam ASR (arayüzler dâhil) ≈ 29 Ω·cm². Soğukta arayüz direnci (Ea ~0.45 eV) baskındır.
+- Hücre tasarım noktası 45 °C'dir: σ 3.1 mS/cm, 30 µm ayırıcı ASR ≈ 1 Ω·cm², toplam ASR
+  (arayüzler dâhil) ≈ 29 Ω·cm²; 25 °C'de 83, −10 °C'de ~760 Ω·cm². Soğukta arayüz direnci
+  (Ea ~0.45 eV) baskındır; bu yüzden paket ısıtıcıyla ≥ 35 °C'de tutulur (`docs/04`).
+- Karışık karba-kloso-borat için tabloda 25 °C üstü değerler Arrhenius **ekstrapolasyonu**dur
+  (195 mS/cm @ 60 °C ölçüm değil).
 
 ## 2.7 Kaynaklar (seçilmiş)
 
 - Udovic, T. J. ve ark. *Chem. Commun.* **50**, 3750 (2014) — Na₂B₁₂H₁₂ süperiyonik iletim.
 - Udovic, T. J. ve ark. *Adv. Mater.* **26**, 7622 (2014) — Na₂B₁₀H₁₀.
 - Tang, W. S. ve ark. *Energy Environ. Sci.* **8**, 3637 (2015) — NaCB₁₁H₁₂ / LiCB₁₁H₁₂.
-- Tang, W. S. ve ark. *ACS Energy Lett.* **1**, 659 (2016) — karışık anyon karba-kloso-borat, oda sıcaklığında ~70 mS/cm.
+- Tang, W. S. ve ark. *Adv. Energy Mater.* **6**, 1502237 (2016) — NaCB₉H₁₀ / LiCB₉H₁₀ "sıvı benzeri" iletkenlik.
+- Tang, W. S. ve ark. *ACS Energy Lett.* **1**, 659 (2016) — karışık anyon karba-kloso-borat katı çözeltisi, oda sıcaklığında ~70 mS/cm.
+- Asakura, R. ve ark. *ACS Appl. Energy Mater.* **2**, 6924 (2019) — hidroborat oksidasyonu ve karbonun etkisi.
+- Yabuuchi, N. ve ark. *Nat. Mater.* **11**, 512 (2012) — P2-Na₂/₃Fe₁/₂Mn₁/₂O₂.
 - Duchêne, L. ve ark. *Chem. Commun.* **53**, 4195 (2017) — Na₂(B₁₂H₁₂)₀.₅(B₁₀H₁₀)₀.₅ elektroliti.
 - Duchêne, L. ve ark. *Energy Environ. Sci.* **10**, 2609 (2017) — 3 V tamamen katı hâl Na hücresi (NaCrO₂).
 - Asakura, R. ve ark. *Energy Environ. Sci.* **13**, 5048 (2020) — 4 V pasifleştirici arayüz.

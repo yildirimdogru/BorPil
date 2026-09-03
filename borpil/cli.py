@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
     su.add_argument("varyant", nargs="?", default="A", choices=list(hc.VARYANTLAR))
     su.add_argument("--kwh", type=float, default=75.0)
     su.add_argument("--ortam", type=float, default=20.0, help="ortam sıcaklığı (°C)")
-    su.add_argument("--isitici", type=float, default=None, help="ısıtıcı hedef sıcaklığı (°C); yoksa kapalı")
+    su.add_argument("--isitici", type=float, default=35.0, help="ısıtıcı hedef sıcaklığı (°C); 0 → kapalı")
 
     alt.add_parser("termo", help="teorik termodinamik sınırlar")
 
@@ -60,9 +60,11 @@ def main(argv: list[str] | None = None) -> int:
     elif a.komut == "surus":
         g = pk.PaketGereksinimi(brut_enerji_kWh=a.kwh)
         pkt = pk.boyutlandir(hc.VARYANTLAR[a.varyant], g)
-        s = sm.surus_simulasyonu(pkt, T_ortam_C=a.ortam, isitici_hedef_C=a.isitici)
+        hedef = None if not a.isitici else a.isitici
+        s = sm.surus_simulasyonu(pkt, T_ortam_C=a.ortam, isitici_hedef_C=hedef)
         print(f"Menzil {s.menzil_km:.0f} km, tüketim {s.tuketim_kWh_100km:.1f} kWh/100 km, "
               f"paket T {s.T_baslangic_C:.0f}→{s.T_bitis_C:.0f} °C, min hücre gerilimi {s.V_min_hucre:.2f} V, "
+              f"ısıtıcı {s.isitici_kWh:.1f} kWh, güç kısıtı {s.guc_kisiti_s:.0f} s / {s.guc_acigi_kWh:.2f} kWh, "
               f"araç kütlesi {s.toplam_kutle_kg:.0f} kg")
     elif a.komut == "termo":
         for k in td.metal_hava_kiyas() + [td.dbfc()]:
