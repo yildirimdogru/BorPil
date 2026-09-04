@@ -10,6 +10,7 @@ sabitler      : fiziksel sabitler
 malzemeler    : malzeme veri tabanı (yoğunluk, kapasite, potansiyel, maliyet, bor içeriği)
 termodinamik  : Gibbs/Nernst, teorik kapasite ve enerji yoğunluğu hesapları
 elektrolit    : kloso-borat iyonik iletkenliğinin Arrhenius modeli ve faz geçişleri
+kimya_sicaklik: 10–45 °C penceresi taraması (bulk σ vs CCD/arayüz)
 geometri      : [B12H12]2- ikosahedronu ve anyon boyutu; hücre/paket paketleme geometrisi
 hucre         : katman yığını (stack) modeli → Wh/kg, Wh/L, bor kütlesi
 paket         : EV paket boyutlandırma (enerji, gerilim, kütle, hacim, maliyet)
@@ -28,6 +29,7 @@ from . import (
     paket,
     simulasyon,
     karsilastirma,
+    kimya_sicaklik,
 )
 
 __all__ = [
@@ -40,6 +42,7 @@ __all__ = [
     "paket",
     "simulasyon",
     "karsilastirma",
+    "kimya_sicaklik",
 ]
 
 __version__ = "0.1.0"

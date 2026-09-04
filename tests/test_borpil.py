@@ -406,3 +406,47 @@ def test_darbe_isitma_soguk_ta_guclu_ve_kendini_sinirlar():
     sure20, _ = sm.on_isitma_suresi_dk(p, -10, 45, ptc_kW=20)
     sure6, _ = sm.on_isitma_suresi_dk(p, -10, 45, ptc_kW=6)
     assert sure20 < 0.4 * sure6
+
+
+# --- 10–45 °C kimya taraması -----------------------------------------------------
+
+def test_karba_kloso_10C_bulk_yeterli_b12_degil():
+    from borpil import kimya_sicaklik as ky
+    hedef = ky.SIGMA_TASARIM_45C_S_CM
+    assert float(el.iletkenlik_C(mz.NA2_CB9_CB11, 10.0)) > hedef
+    assert float(el.iletkenlik_C(mz.NA2_B12_B10, 10.0)) < hedef
+
+
+def test_ccd_10C_gen1_yetersiz_tam_eslesme_icin():
+    from borpil import kimya_sicaklik as ky
+    assert el.kritik_akim_yogunlugu_mA_cm2(10.0) < 0.8
+    assert ky.ea_icin_j25(ky.CCD_TASARIM_45C, el.EA_ARAYUZ_EV) > 6.0
+    assert ky.ccd_ea_icin_sabit_j25(ky.CCD_TASARIM_45C) == float("inf")
+    assert 0.15 < ky.ccd_ea_icin_sabit_j25(1.0) < 0.30
+
+
+def test_borpil_lt_nvp_ve_karba_se():
+    h = hc.hesapla(hc.BORPIL_LT)
+    assert h.tasarim.katot is mz.NVP
+    assert h.tasarim.elektrolit is mz.NA2_CB9_CB11
+    assert h.li_kg_per_kwh == 0.0
+    assert h.tasarim.calisma_sicakligi_C == 25.0
+    assert "LT" in hc.VARYANTLAR
+
+
+def test_lt_tepe_guc_10C_hâlâ_ccd_kilitli():
+    """Bulk açılsa da model CCD'si ortak → 10 °C güç A-alt ile aynı mertebe."""
+    p_lt = pk.boyutlandir(hc.BORPIL_LT)
+    p_alt = pk.boyutlandir(hc.BORPIL_A_ALT)
+    assert sm.maks_guc_kW(p_lt, 10.0) < 0.35 * sm.maks_guc_kW(p_lt, 45.0)
+    oran = sm.maks_guc_kW(p_lt, 10.0) / sm.maks_guc_kW(p_alt, 10.0)
+    assert 0.7 < oran < 1.6
+
+
+def test_kimya_markdown_raporu():
+    from borpil import kimya_sicaklik as ky
+    md = ky.markdown_bolum()
+    assert "10–45" in md and "CCD" in md and "LT" in md
+    tarama = {t.ad: t for t in ky.elektrolit_taramasi()}
+    assert tarama["Na2(CB9H10)(CB11H12)"].bulk_10C_yeterli
+    assert not tarama["Na2(B12H12)(B10H10)"].bulk_10C_yeterli

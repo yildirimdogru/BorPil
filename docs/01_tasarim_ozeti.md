@@ -37,6 +37,7 @@ belirlenmiştir (docs/07).
 | Paket maliyeti, ölçek senaryosu (SE 25 USD/kg, verim %90) | 234 | 214 | | |
 
 Varyantlar: **A-Fe** (vanadyumsuz, 178 Wh/kg), **A0** (NaCrO₂, kanıtlanmış pencere, 184 Wh/kg),
+**LT** (karba-kloso + NVP, 10–45 °C kimya hattı, `docs/10`),
 **B** (karba-kloso-borat + 3.9 V katot, 281 Wh/kg — 2. nesil, pahalı), **C** (sert karbon anot,
 dendritsiz, 144 Wh/kg), **S** (Na-S, ~400 Wh/kg — spekülatif, uzun vade).
 
@@ -84,5 +85,6 @@ Ayrıntılar: `docs/02` (kimya), `docs/03` (malzeme/üretim), `docs/04` (hücre/
 `docs/07` (elektrik-elektronik ve üretici incelemeleri, kurul kararları),
 `docs/08` (paket maden ve element bütçesi),
 `docs/09` (ısıl ekosistem ve soğuk başlangıç — 3. tur kurul),
+`docs/10` (kimya ekibi: 10–45 °C penceresi),
 `docs/urun/` (satışa-hazır ürün formu: veri formu, entegrasyon, güvenlik/garanti, broşür),
 `cikti/RAPOR.md` (sayılar).

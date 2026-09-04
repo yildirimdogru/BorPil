@@ -44,6 +44,7 @@ Kurul kararıyla 1. nesil **ticari baz çizgisi BorPil-A-alt** (60 µm elektroli
 | Paket maliyeti, ölçek senaryosu (SE 25 USD/kg, verim %90) | 234 | 214 | | |
 
 Varyantlar: **A-Fe** (vanadyumsuz, 178 Wh/kg), **A0** (NaCrO₂, kanıtlanmış pencere, 184 Wh/kg),
+**LT** (karba-kloso + NVP, 10–45 °C kimya hattı — bulk açılır, CCD kilit kalır, `docs/10`),
 **B** (karba-kloso-borat + 3.9 V katot, 281 Wh/kg — 2. nesil, pahalı), **C** (sert karbon anot,
 dendritsiz, 144 Wh/kg), **S** (Na-S, ~400 Wh/kg — spekülatif, uzun vade).
 
@@ -93,8 +94,9 @@ borpil/            Python paketi (modeller)
   malzemeler.py      malzeme veri tabanı (elektrolitler, katotlar, anotlar, Li-iyon referansları)
   termodinamik.py    Gibbs → E°, Nernst, bor-hava & DBFC teorik sınırları, DBFC menzil uzatıcı
   elektrolit.py      kloso-borat iletkenliği (Arrhenius, faz geçişi), ASR, kritik akım yoğunluğu (tek tanım)
+  kimya_sicaklik.py  10–45 °C penceresi: bulk σ vs CCD/arayüz taraması, sentez KPI, BorPil-LT
   geometri.py        [B12H12]2- ikosahedronu, bcc kafes boşluk analizi, pouch/paket geometrisi
-  hucre.py           katman yığını → Wh/kg, Wh/L, element bütçesi, maliyet, oksidasyon penceresi uyarıları (A, A-alt, A0, A-Fe, B, C, S)
+  hucre.py           katman yığını → Wh/kg, Wh/L, element bütçesi, maliyet, oksidasyon penceresi uyarıları (A, A-alt, A0, A-Fe, B, C, S, LT)
   paket.py           EV paketi: seri/paralel, 3 bağımsız dizi, kütle/hacim, gerilim penceresi–invertör–şarj cihazı–tab–kısa devre kontrolleri, ısıtıcı güvenlik analizi, gen-1 maliyet modeli
   simulasyon.py      ortak akım sınırı (deşarj/şarj/rejen), OCV+R, ısıl model (ısıtıcı, atık ısı, soğutma), WLTP-benzeri ve otoyol çevrimleri, DC hızlı şarj, darbe (AC) ısıtma, güç haritaları
   karsilastirma.py   Li-iyon ile karşılaştırma tablosu
@@ -110,9 +112,10 @@ docs/              tasarım dokümanları (Türkçe)
   07_ee_uretim_incelemesi_ve_kurul.md  elektrik-elektronik ve üretici incelemeleri, kurul kararları (P1–P20)
   08_paket_maden_ve_element_butcesi.md paket maden/element oranları (B, Na, V, P, Al; Li/Co/Ni/Cu = 0)
   09_isil_ekosistem_ve_soguk_baslangic.md 3. tur kurul: 35–60 °C, atık ısı 8/10, süperkap, zincirleme ısınma
+  10_kimya_10_45C.md                      A1: 10–45 °C kimya hattı (K1 bulk açılır, K3 CCD kilit)
   urun/                                satışa-hazır ürün formu: veri formu, entegrasyon, güvenlik/garanti, broşür
 cikti/             otomatik üretilen rapor (RAPOR.md) ve grafikler
-tests/             birim testleri (45)
+tests/             birim testleri (50)
 ```
 
 ## Kurulum ve kullanım
@@ -120,7 +123,8 @@ tests/             birim testleri (45)
 ```bash
 pip install -r requirements.txt
 python -m borpil.cli termo                 # teorik sınırlar (bor-hava, DBFC, metal-hava kıyas)
-python -m borpil.cli hucre A-alt           # hücre yığın modeli (A, A-alt, A0, A-Fe, B, C, S)
+python -m borpil.cli hucre A-alt           # hücre yığın modeli (A, A-alt, A0, A-Fe, B, C, S, LT)
+python -m borpil.cli kimya                 # 10–45 °C kimya taraması (bulk σ vs CCD)
 python -m borpil.cli hucre A --ayirici 20 --alan-kapasitesi 4 --sicaklik 60
 python -m borpil.cli paket A-alt --kwh 75  # 120s3p, 3 dizi, elektrik/güvenlik kontrolleri (--volt 770: 800 V sınıfı)
 python -m borpil.cli surus A-alt --ortam -10 --isitici 35
@@ -133,7 +137,7 @@ Tüm sayısal iddialar koddan üretilir; varsayımlar (özellikle maliyetler) ve
 açıkça işaretlenmiştir (`maliyet_varsayim`). Ayrıntılar: `docs/02` (kimya), `docs/03`
 (malzeme/üretim), `docs/04` (hücre/paket), `docs/05` (güvenlik/çevre), `docs/06` (riskler, hakem
 bulguları, yol haritası), `docs/07` (elektrik-elektronik/üretici incelemeleri ve kurul kararları),
-`docs/08` (paket maden ve element bütçesi), `docs/09` (ısıl ekosistem, soğuk başlangıç, süperkap kurul oturumu), `docs/urun/` (EV-74 teknik veri formu, entegrasyon,
+`docs/08` (paket maden ve element bütçesi), `docs/09` (ısıl ekosistem, soğuk başlangıç, süperkap kurul oturumu), `docs/10` (10–45 °C kimya hattı), `docs/urun/` (EV-74 teknik veri formu, entegrasyon,
 güvenlik/garanti, tanıtım broşürü), `cikti/RAPOR.md` (sayılar).
 
 ---
@@ -184,7 +188,8 @@ Na excess, 30 Ω·cm² interface — manufacturable today) and the **target/uppe
 | Pack cost, scale scenario (SE at 25 USD/kg, 90 % yield) | 234 | 214 | | |
 
 Variants: **A-Fe** (vanadium-free, 178 Wh/kg), **A0** (NaCrO₂, proven stability window,
-184 Wh/kg), **B** (carba-closo-borate + 3.9 V cathode, 281 Wh/kg — 2nd gen, expensive), **C**
+184 Wh/kg), **LT** (carba-closo + NVP, 10–45 °C chemistry track — bulk opens, CCD remains,
+`docs/10`), **B** (carba-closo-borate + 3.9 V cathode, 281 Wh/kg — 2nd gen, expensive), **C**
 (hard-carbon anode, dendrite-free, 144 Wh/kg), **S** (Na-S, ~400 Wh/kg — speculative, long term).
 
 ## Why this route?
@@ -233,8 +238,9 @@ borpil/            Python package (models)
   malzemeler.py      materials database (electrolytes, cathodes, anodes, Li-ion references)
   termodinamik.py    Gibbs → E°, Nernst, boron-air & DBFC theoretical limits, DBFC range extender
   elektrolit.py      closo-borate conductivity (Arrhenius, phase transition), ASR, critical current density (single definition)
+  kimya_sicaklik.py  10–45 °C window: bulk σ vs CCD/interface scan, synthesis KPIs, BorPil-LT
   geometri.py        [B12H12]2- icosahedron, bcc lattice void analysis, pouch/pack geometry
-  hucre.py           layer stack → Wh/kg, Wh/L, element budget, cost, oxidation-window warnings (A, A-alt, A0, A-Fe, B, C, S)
+  hucre.py           layer stack → Wh/kg, Wh/L, element budget, cost, oxidation-window warnings (A, A-alt, A0, A-Fe, B, C, S, LT)
   paket.py           EV pack: series/parallel, 3 independent strings, mass/volume, voltage window–inverter–charger–tab–short-circuit checks, heater safety analysis, gen-1 cost model
   simulasyon.py      shared current limit (discharge/charge/regen), OCV+R, thermal model (heater, waste heat, cooling), WLTP-like and highway cycles, DC fast charge, pulse (AC) heating, power maps
   karsilastirma.py   comparison table against Li-ion
@@ -250,9 +256,10 @@ docs/              design documents (Turkish)
   07_ee_uretim_incelemesi_ve_kurul.md  electrical-engineering and manufacturer reviews, council decisions (P1–P20)
   08_paket_maden_ve_element_butcesi.md pack mineral/element budget (B, Na, V, P, Al; Li/Co/Ni/Cu = 0)
   09_isil_ekosistem_ve_soguk_baslangic.md 3rd council session: 35–60 °C band, waste-heat 8/10, supercap catalyst
+  10_kimya_10_45C.md                      A1: 10–45 °C chemistry track (K1 bulk opens, K3 CCD remains)
   urun/                                product-form set: datasheet, integration, safety/warranty, brochure
 cikti/             auto-generated report (RAPOR.md) and figures
-tests/             unit tests (45)
+tests/             unit tests (50)
 ```
 
 ## Installation and usage
@@ -260,7 +267,8 @@ tests/             unit tests (45)
 ```bash
 pip install -r requirements.txt
 python -m borpil.cli termo                 # theoretical limits (boron-air, DBFC, metal-air comparison)
-python -m borpil.cli hucre A-alt           # cell stack model (A, A-alt, A0, A-Fe, B, C, S)
+python -m borpil.cli hucre A-alt           # cell stack model (A, A-alt, A0, A-Fe, B, C, S, LT)
+python -m borpil.cli kimya                 # 10–45 °C chemistry scan (bulk σ vs CCD)
 python -m borpil.cli hucre A --ayirici 20 --alan-kapasitesi 4 --sicaklik 60
 python -m borpil.cli paket A-alt --kwh 75  # 120s3p, 3 strings, electrical/safety checks (--volt 770: 800 V class)
 python -m borpil.cli surus A-alt --ortam -10 --isitici 35
@@ -273,5 +281,5 @@ All numerical claims are produced by the code; assumptions (especially costs) ar
 marked in the data classes (`maliyet_varsayim`). Details: `docs/02` (chemistry), `docs/03`
 (materials/manufacturing), `docs/04` (cell/pack), `docs/05` (safety/environment), `docs/06`
 (risks, review findings, roadmap), `docs/07` (electrical/manufacturing reviews and council
-decisions), `docs/08` (pack mineral and element budget), `docs/09` (thermal ecosystem, cold start, supercap council session), `docs/urun/` (EV-74 datasheet,
+decisions), `docs/08` (pack mineral and element budget), `docs/09` (thermal ecosystem, cold start, supercap council session), `docs/10` (10–45 °C chemistry track), `docs/urun/` (EV-74 datasheet,
 integration, safety/warranty, brochure), `cikti/RAPOR.md` (numbers).
