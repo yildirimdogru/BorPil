@@ -213,9 +213,9 @@ class SurusSonucu:
 
 def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20.0,
                       T_baslangic_C: float | None = None, isitici_hedef_C: float | None = 35.0,
-                      isitici_guc_kW: float = 6.0, soc_bitis: float | None = None,
-                      atik_isi_kW: float = 0.0, sogutma_hedef_C: float = 60.0,
-                      sogutma_guc_W_per_K: float = 150.0,
+                      isitici_guc_kW: float = 3.0, soc_bitis: float | None = None,
+                      atik_isi_kW: float = 0.8, sogutma_hedef_C: float = 60.0,
+                      sogutma_guc_W_per_K: float = 200.0, sogutma_maks_kW: float = 3.0,
                       cevrim: tuple[np.ndarray, np.ndarray] | None = None) -> SurusSonucu:
     """
     Çevrimi SOC bitene kadar tekrarlayarak menzil hesaplar.
@@ -265,9 +265,9 @@ def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20
             surus_var = v[i] > 0.5
             P_isitici = isitici_guc_kW * 1e3 if (isitici_hedef_C is not None and T < isitici_hedef_C) else 0.0
             # tahrik atık ısısı: termostatik vana — paket hedefin 5 K üstüne çıkınca devre dışı
-            atik_izin = isitici_hedef_C is None or T < isitici_hedef_C + 5.0
+            atik_izin = T < (isitici_hedef_C if isitici_hedef_C is not None else 35.0) + 5.0
             P_atik = atik_isi_kW * 1e3 if (surus_var and atik_izin) else 0.0
-            P_sogutma = sogutma_guc_W_per_K * (T - sogutma_hedef_C) if T > sogutma_hedef_C else 0.0
+            P_sogutma = min(sogutma_guc_W_per_K * (T - sogutma_hedef_C), sogutma_maks_kW * 1e3) if T > sogutma_hedef_C else 0.0
             R_h = hucre_direnci_ohm(p.hucre, T)
             U = float(ocv(soc, p.hucre.gerilim_V))
             P_h = (P_bat + P_isitici) / n            # hücre başına güç (seri-paralel simetrik)
@@ -371,14 +371,16 @@ def sarj_simulasyonu(p: PaketSonucu, T_ortam_C: float = 20.0, T_baslangic_C: flo
                      soc_baslangic: float = 0.10, soc_hedef: float = 0.80,
                      sarj_cihazi_kW: float = 150.0, sarj_cihazi_maks_A: float = 500.0,
                      V_maks_hucre: float | None = None, T_sarj_min_C: float = 15.0,
-                     isitici_hedef_C: float = 45.0, isitici_guc_kW: float = 6.0,
+                     isitici_hedef_C: float = 45.0, isitici_guc_kW: float = 20.0,
                      sogutma_hedef_C: float = 60.0,
-                     sogutma_guc_W_per_K: float = 150.0, dt: float = 5.0) -> SarjSonucu:
+                     sogutma_guc_W_per_K: float = 200.0, sogutma_maks_kW: float = 3.0, dt: float = 5.0) -> SarjSonucu:
     """
     DC hızlı şarj: her adımda akım = min( kritik akım yoğunluğu(T)·marj·alan,  şarj cihazı gücü / V_paket,
     şarj cihazı akım sınırı,  V_maks'a ulaşmadan izin verilen akım ).  Paket T_sarj_min'in altındaysa
     önce ısıtıcı (şebekeden beslenir) çalışır; şarj sırasında da hedef sıcaklığa kadar ısıtır.
-    60 °C üstünde sıvı plaka soğutması devreye girer. Na kaplama (şarj) yönü kritik olduğu için
+    60 °C üstünde sıvı plaka soğutması (≤ 3 kW) devreye girer. Isıtıcı DC şarj cihazından beslenir (20 kW;
+    kurul kararı: şarj istasyonunda yüksek güçlü şebeke ısıtması, −10 °C seansını 95 → ~53 dk'ya indirir).
+    Na kaplama (şarj) yönü kritik olduğu için
     akım sınırı `akim_siniri_A(…, "sarj")` = CCD/SARJ_GUVENLIK_KATSAYISI'dır (deşarjdaki 2× tolerans yok).
     Isıtıcı şebekeden beslenir (paket enerjisi harcanmaz).
     """
@@ -418,7 +420,7 @@ def sarj_simulasyonu(p: PaketSonucu, T_ortam_C: float = 20.0, T_baslangic_C: flo
         sinir[etiket] += dt
         soc += I_h * dt / kapasite_As
         Q = I_h**2 * R_h * n
-        P_sogutma = sogutma_guc_W_per_K * (T - sogutma_hedef_C) if T > sogutma_hedef_C else 0.0
+        P_sogutma = min(sogutma_guc_W_per_K * (T - sogutma_hedef_C), sogutma_maks_kW * 1e3) if T > sogutma_hedef_C else 0.0
         T += (Q + P_isitici - P_sogutma - UA * (T - T_ortam_C)) * dt / C_isil
         kayip_J += Q * dt
         isitici_J += P_isitici * dt

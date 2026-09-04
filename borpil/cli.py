@@ -26,7 +26,7 @@ def main(argv: list[str] | None = None) -> int:
     pa = alt.add_parser("paket", help="EV paketi boyutlandırma")
     pa.add_argument("varyant", nargs="?", default="A", choices=list(hc.VARYANTLAR))
     pa.add_argument("--kwh", type=float, default=75.0)
-    pa.add_argument("--volt", type=float, default=400.0)
+    pa.add_argument("--volt", type=float, default=404.0, help="nominal paket gerilimi (404 → 120s; 800 V sınıfı için 770)")
 
     su = alt.add_parser("surus", help="sürüş çevrimi / menzil simülasyonu")
     su.add_argument("varyant", nargs="?", default="A", choices=list(hc.VARYANTLAR))

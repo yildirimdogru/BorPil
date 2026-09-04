@@ -21,9 +21,9 @@ from .sabitler import kutle_kesri
 @dataclass(frozen=True)
 class KompozitRecete:
     """Kütle kesirleri (toplam 1.0) ve gözeneklilik."""
-    aktif: float = 0.70
+    aktif: float = 0.71
     elektrolit: float = 0.25
-    karbon: float = 0.03
+    karbon: float = 0.02      # kurul P12: %3 → %2 (+CNT); karbon hidroborat oksidasyonunu hızlandırır
     baglayici: float = 0.02
     gozeneklilik: float = 0.08
 
@@ -35,7 +35,7 @@ class KompozitRecete:
 
 @dataclass(frozen=True)
 class HucreTasarimi:
-    ad: str = "BorPil-A (Na | Na2(B12H12)(B10H10) | NVP)"
+    ad: str = "BorPil-A (Na | Na2(B12H12)(B10H10) | NVP) — 1. nesil hedef / üst bant"
     katot: mz.Elektrot = mz.NVP
     katot_recete: KompozitRecete = field(default_factory=KompozitRecete)
     alan_kapasitesi_mAh_cm2: float = 3.0       # tek yüz, katot pratik kapasitesine göre
@@ -271,7 +271,7 @@ def hesapla(t: HucreTasarimi, hedef_kapasite_Ah: float = 60.0) -> HucreSonucu:
 # Hazır tasarım varyantları
 # ---------------------------------------------------------------------------
 
-BORPIL_A = HucreTasarimi()  # temel: Na | B12/B10 | NVP, 45 °C
+BORPIL_A = HucreTasarimi()  # 1. nesil HEDEF / üst bant: Na | B12/B10 | NVP, 45 °C (30 µm SE, 20 µm Na, 15 Ω·cm²)
 
 BORPIL_A_MUHAFAZAKAR = HucreTasarimi(
     ad="BorPil-A0 (Na | Na2(B12H12)(B10H10) | NaCrO2) — pencere içi muhafazakâr",
@@ -307,7 +307,7 @@ BORPIL_S = HucreTasarimi(
 )
 
 BORPIL_A_ALT = HucreTasarimi(
-    ad="BorPil-A-alt (Na | Na2(B12H12)(B10H10) | NVP) — muhafazakâr alt tahmin (60 µm SE, 50 µm Na, 30 Ω·cm²)",
+    ad="BorPil-A-alt (Na | Na2(B12H12)(B10H10) | NVP) — 1. nesil TİCARİ BAZ ÇİZGİSİ (60 µm SE, 50 µm Na, 30 Ω·cm²)",
     ayirici_kalinlik_um=60.0,
     anot_fazlasi_um=50.0,
     arayuz_direnci_ohm_cm2=30.0,

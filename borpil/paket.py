@@ -16,7 +16,7 @@ from .hucre import HucreSonucu, HucreTasarimi, hesapla
 class PaketGereksinimi:
     ad: str = "C-segment sedan/SUV"
     brut_enerji_kWh: float = 75.0
-    nominal_gerilim_V: float = 400.0
+    nominal_gerilim_V: float = 404.0  # 120s × 3.37 V (kurul P9: 10×12 kanallı AFE dizilimi)
     kullanilabilir_soc_penceresi: float = 0.92
     surekli_guc_kW: float = 80.0      # ~1C sürekli (otoyol tırmanış senaryosu)
     tepe_guc_kW: float = 200.0        # 10 s darbe
@@ -31,16 +31,19 @@ class PaketGereksinimi:
     tab_akim_yogunlugu_surekli_maks_A_mm2: float = 2.5
     # Kütle/hacim çarpanları: CTP (cell-to-pack) mimarisi; katı hâl (yanıcı elektrolit yok)
     # → daha az yangın bariyeri, ancak yığın basıncı fikstürü (1-2 MPa), 12 mm yalıtım ve ısıtıcı
-    # eklenir. Hakem önerisi aralığı: 0.65-0.72 kütle, 0.50-0.58 hacim.
+    # eklenir. Kurul P10: pouch-in-frame (çerçeve + disk yay) → hacim 0.56 → 0.52, +12 kg fikstür.
     hucre_paket_kutle_orani: float = 0.72
-    hucre_paket_hacim_orani: float = 0.56
+    hucre_paket_hacim_orani: float = 0.52
+    fikstur_ek_kg: float = 12.0
+    bagimsiz_dizi: bool = True          # kurul P8: hücre-içi 3p yerine 3 bağımsız 120s dizi (akım sensörü + kontaktör)
+    bagimsiz_dizi_ek_usd: float = 225.0
     # Maliyet: hücre imalat çarpanı (malzeme → hücre), ilk geçiş verimi (fire malzeme maliyetine yansır)
     # ve paket düzeyi ek maliyet (BMS, ısıtıcı, yalıtım, muhafaza, montaj)
-    imalat_carpani: float = 1.55
-    ilk_gecis_verimi: float = 1.0
-    paket_ek_usd_kWh: float = 22.0
+    imalat_carpani: float = 1.75      # kurul P13 (üretici incelemesi: 1.65-1.85)
+    ilk_gecis_verimi: float = 0.75    # gen-1 ilk geçiş verimi (SE film + WIP delaminasyon ana kayıp)
+    paket_ek_usd_kWh: float = 32.0    # BMS 8-12, PTC 3-5, aerojel 4-7, muhafaza 5-8, montaj 4-6
     # Isıl / ısıtıcı güvenliği
-    isitici_guc_kW: float = 6.0
+    isitici_guc_kW: float = 3.0              # kurul P5: PTC 6 → 3 kW (park/ön şartlandırma); şarjda şebekeden 20 kW
     isitici_donanim_kesici_C: float = 80.0   # BMS'ten bağımsız termal kesici (bimetal/termal sigorta)
     na_erime_C: float = 97.8
     yalitim_kalinlik_mm: float = 12.0
@@ -90,7 +93,8 @@ class PaketSonucu:
             f"== Paket: {g.ad} — {g.brut_enerji_kWh:.0f} kWh hedef, {g.nominal_gerilim_V:.0f} V ==",
             f"Hücre: {self.hucre.tasarim.ad}",
             f"Mimari: {self.seri}s{self.paralel}p = {self.hucre_sayisi} hücre × {self.hucre.hucre_kapasite_Ah:.1f} Ah, "
-            f"{self.nominal_gerilim_V:.0f} V nominal",
+            f"{self.nominal_gerilim_V:.0f} V nominal"
+            + (f" — {self.paralel} bağımsız {self.seri}s dizi (dizi başına akım sensörü + kontaktör)" if g.bagimsiz_dizi else ""),
             f"Enerji: {self.gercek_enerji_kWh:.1f} kWh brüt / {self.kullanilabilir_enerji_kWh:.1f} kWh kullanılabilir",
             f"Kütle {self.paket_kutle_kg:.0f} kg ({self.paket_wh_kg:.0f} Wh/kg), hacim {self.paket_hacim_L:.0f} L ({self.paket_wh_L:.0f} Wh/L)",
             f"Element bütçesi: B {self.bor_kg:.1f} kg, Na {self.na_kg:.1f} kg, V {self.v_kg:.1f} kg, Li {self.li_kg:.1f} kg",
@@ -123,7 +127,7 @@ def boyutlandir(tasarim: HucreTasarimi, gereksinim: PaketGereksinimi = PaketGere
 
     hucre_kutle = n * h.hucre_kutle_kg
     hucre_hacim = n * h.hucre_hacim_L
-    paket_kutle = hucre_kutle / gereksinim.hucre_paket_kutle_orani
+    paket_kutle = hucre_kutle / gereksinim.hucre_paket_kutle_orani + gereksinim.fikstur_ek_kg
     paket_hacim = hucre_hacim / gereksinim.hucre_paket_hacim_orani
 
     # Toplam elektrot alanı (tek yüz eşdeğeri) → akım yoğunluğu
@@ -138,6 +142,8 @@ def boyutlandir(tasarim: HucreTasarimi, gereksinim: PaketGereksinimi = PaketGere
 
     maliyet = E * (h.malzeme_usd_per_kwh / gereksinim.ilk_gecis_verimi * gereksinim.imalat_carpani
                    + gereksinim.paket_ek_usd_kWh)
+    if gereksinim.bagimsiz_dizi:
+        maliyet += gereksinim.bagimsiz_dizi_ek_usd
 
     # --- Elektrik mimarisi kontrolleri (EE incelemesi)
     from . import simulasyon as _sm  # döngüsel içe aktarmayı önlemek için yerel

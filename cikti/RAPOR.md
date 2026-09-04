@@ -1,6 +1,6 @@
 # BorPil — Hesaplanmış Tasarım Raporu (otomatik üretildi)
 
-Bu dosya `borpil rapor` komutuyla üretilir; tüm sayılar `borpil` paketindeki modellerden gelir.
+Bu dosya `borpil rapor` komutuyla üretilir; tüm sayılar `borpil` paketindeki modellerden gelir. Kurul kararı (docs/07): 1. nesil ticari **baz çizgisi BorPil-A-alt**, **hedef/üst bant BorPil-A**; her iki konfigürasyon yan yana raporlanır.
 
 ## 1. Teorik sınırlar (termodinamik)
 
@@ -31,86 +31,86 @@ Geometri: [B12H12]2-: kenar 1.78 Å, R_B 1.69 Å, R_H 2.89 Å, etkin yarıçap 3
 ## 3. Hücre varyantları
 
 ```
-== BorPil-A (Na | Na2(B12H12)(B10H10) | NVP) ==
+== BorPil-A (Na | Na2(B12H12)(B10H10) | NVP) — 1. nesil hedef / üst bant ==
 Katot: Na3V2(PO4)3 (NASICON, NVP) | SE: Na2(B12H12)0.5(B10H10)0.5 (eş-molar kloso-borat karışımı) | Anot: Na metal
-Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 29.2 Ω·cm²
+Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 28.9 Ω·cm²
 Katmanlar (tekrar birimi):
   - Al folyo (katot)                12.0 µm     3.24 mg/cm²
-  - Katot kompozit                 179.7 µm    38.96 mg/cm²
+  - Katot kompozit                 176.4 µm    38.41 mg/cm²
   - SE ayırıcı                      30.0 µm     4.50 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    46.5 µm     1.94 mg/cm²
   - Al folyo (anot)                 12.0 µm     3.24 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    46.5 µm     1.94 mg/cm²
   - SE ayırıcı                      30.0 µm     4.50 mg/cm²
-  - Katot kompozit                 179.7 µm    38.96 mg/cm²
-Tekrar birimi: 536 µm, 97.3 mg/cm², 6.0 mAh/cm², 3.37 V
-Yığın: 208 Wh/kg, 377 Wh/L
-Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 995 g, 594 mL → 201 Wh/kg, 337 Wh/L
-Element bütçesi: B 0.95 kg/kWh, Na 0.97 kg/kWh, V 0.60 kg/kWh, Li 0.00 kg/kWh
-Malzeme maliyeti (varsayımsal ölçek): 134 USD/kWh
+  - Katot kompozit                 176.4 µm    38.41 mg/cm²
+Tekrar birimi: 530 µm, 96.2 mg/cm², 6.0 mAh/cm², 3.37 V
+Yığın: 210 Wh/kg, 382 Wh/L
+Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 984 g, 587 mL → 203 Wh/kg, 341 Wh/L
+Element bütçesi: B 0.94 kg/kWh, Na 0.96 kg/kWh, V 0.60 kg/kWh, Li 0.00 kg/kWh
+Malzeme maliyeti (varsayımsal ölçek): 139 USD/kWh
   ! UYARI: katot kesim potansiyeli ~3.8 V termodinamik oksidasyon sınırının (3.0 V) üstünde; çalışma pasifleştirici arayüze (kaplama) dayanır.
 ```
 
 ```
-== BorPil-A-alt (Na | Na2(B12H12)(B10H10) | NVP) — muhafazakâr alt tahmin (60 µm SE, 50 µm Na, 30 Ω·cm²) ==
+== BorPil-A-alt (Na | Na2(B12H12)(B10H10) | NVP) — 1. nesil TİCARİ BAZ ÇİZGİSİ (60 µm SE, 50 µm Na, 30 Ω·cm²) ==
 Katot: Na3V2(PO4)3 (NASICON, NVP) | SE: Na2(B12H12)0.5(B10H10)0.5 (eş-molar kloso-borat karışımı) | Anot: Na metal
-Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 45.2 Ω·cm²
+Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 44.8 Ω·cm²
 Katmanlar (tekrar birimi):
   - Al folyo (katot)                12.0 µm     3.24 mg/cm²
-  - Katot kompozit                 179.7 µm    38.96 mg/cm²
+  - Katot kompozit                 176.4 µm    38.41 mg/cm²
   - SE ayırıcı                      60.0 µm     9.00 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    76.5 µm     4.85 mg/cm²
   - Al folyo (anot)                 12.0 µm     3.24 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    76.5 µm     4.85 mg/cm²
   - SE ayırıcı                      60.0 µm     9.00 mg/cm²
-  - Katot kompozit                 179.7 µm    38.96 mg/cm²
-Tekrar birimi: 656 µm, 112.1 mg/cm², 6.0 mAh/cm², 3.37 V
-Yığın: 180 Wh/kg, 308 Wh/L
-Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 1145 g, 725 mL → 175 Wh/kg, 276 Wh/L
-Element bütçesi: B 1.25 kg/kWh, Na 1.37 kg/kWh, V 0.60 kg/kWh, Li 0.00 kg/kWh
-Malzeme maliyeti (varsayımsal ölçek): 158 USD/kWh
+  - Katot kompozit                 176.4 µm    38.41 mg/cm²
+Tekrar birimi: 650 µm, 111.0 mg/cm², 6.0 mAh/cm², 3.37 V
+Yığın: 182 Wh/kg, 311 Wh/L
+Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 1134 g, 717 mL → 177 Wh/kg, 279 Wh/L
+Element bütçesi: B 1.24 kg/kWh, Na 1.37 kg/kWh, V 0.60 kg/kWh, Li 0.00 kg/kWh
+Malzeme maliyeti (varsayımsal ölçek): 162 USD/kWh
   ! UYARI: katot kesim potansiyeli ~3.8 V termodinamik oksidasyon sınırının (3.0 V) üstünde; çalışma pasifleştirici arayüze (kaplama) dayanır.
 ```
 
 ```
 == BorPil-A0 (Na | Na2(B12H12)(B10H10) | NaCrO2) — pencere içi muhafazakâr ==
 Katot: NaCrO2 (O3 tabakalı oksit) | SE: Na2(B12H12)0.5(B10H10)0.5 (eş-molar kloso-borat karışımı) | Anot: Na metal
-Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 24.6 Ω·cm²
+Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 24.3 Ω·cm²
 Katmanlar (tekrar birimi):
   - Al folyo (katot)                12.0 µm     3.24 mg/cm²
-  - Katot kompozit                 147.4 µm    37.27 mg/cm²
+  - Katot kompozit                 144.3 µm    36.74 mg/cm²
   - SE ayırıcı                      30.0 µm     4.50 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    46.5 µm     1.94 mg/cm²
   - Al folyo (anot)                 12.0 µm     3.24 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    46.5 µm     1.94 mg/cm²
   - SE ayırıcı                      30.0 µm     4.50 mg/cm²
-  - Katot kompozit                 147.4 µm    37.27 mg/cm²
-Tekrar birimi: 472 µm, 93.9 mg/cm², 6.0 mAh/cm², 2.95 V
-Yığın: 189 Wh/kg, 375 Wh/L
-Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 961 g, 524 mL → 182 Wh/kg, 335 Wh/L
-Element bütçesi: B 1.05 kg/kWh, Na 1.26 kg/kWh, V 0.00 kg/kWh, Li 0.00 kg/kWh
-Malzeme maliyeti (varsayımsal ölçek): 110 USD/kWh
+  - Katot kompozit                 144.3 µm    36.74 mg/cm²
+Tekrar birimi: 466 µm, 92.8 mg/cm², 6.0 mAh/cm², 2.95 V
+Yığın: 191 Wh/kg, 380 Wh/L
+Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 951 g, 517 mL → 184 Wh/kg, 339 Wh/L
+Element bütçesi: B 1.04 kg/kWh, Na 1.26 kg/kWh, V 0.00 kg/kWh, Li 0.00 kg/kWh
+Malzeme maliyeti (varsayımsal ölçek): 108 USD/kWh
   ! UYARI: katot kesim potansiyeli ~3.4 V termodinamik oksidasyon sınırının (3.0 V) üstünde; çalışma pasifleştirici arayüze (kaplama) dayanır.
 ```
 
 ```
 == BorPil-A-Fe (Na | Na2(B12H12)(B10H10) | Na2/3Fe1/2Mn1/2O2) — vanadyumsuz düşük maliyet ==
 Katot: P2-Na2/3Fe1/2Mn1/2O2 (tabakalı Fe/Mn oksit) | SE: Na2(B12H12)0.5(B10H10)0.5 (eş-molar kloso-borat karışımı) | Anot: Na metal
-Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 24.8 Ω·cm²
+Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 24.5 Ω·cm²
 Katmanlar (tekrar birimi):
   - Al folyo (katot)                12.0 µm     3.24 mg/cm²
-  - Katot kompozit                 145.2 µm    35.71 mg/cm²
+  - Katot kompozit                 142.2 µm    35.21 mg/cm²
   - SE ayırıcı                      30.0 µm     4.50 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    46.5 µm     1.94 mg/cm²
   - Al folyo (anot)                 12.0 µm     3.24 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    46.5 µm     1.94 mg/cm²
   - SE ayırıcı                      30.0 µm     4.50 mg/cm²
-  - Katot kompozit                 145.2 µm    35.71 mg/cm²
-Tekrar birimi: 468 µm, 90.8 mg/cm², 6.0 mAh/cm², 2.75 V
-Yığın: 182 Wh/kg, 353 Wh/L
-Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 930 g, 519 mL → 176 Wh/kg, 315 Wh/L
-Element bütçesi: B 1.10 kg/kWh, Na 1.11 kg/kWh, V 0.00 kg/kWh, Li 0.00 kg/kWh
-Malzeme maliyeti (varsayımsal ölçek): 105 USD/kWh
+  - Katot kompozit                 142.2 µm    35.21 mg/cm²
+Tekrar birimi: 461 µm, 89.8 mg/cm², 6.0 mAh/cm², 2.75 V
+Yığın: 184 Wh/kg, 358 Wh/L
+Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 920 g, 512 mL → 178 Wh/kg, 319 Wh/L
+Element bütçesi: B 1.09 kg/kWh, Na 1.11 kg/kWh, V 0.00 kg/kWh, Li 0.00 kg/kWh
+Malzeme maliyeti (varsayımsal ölçek): 104 USD/kWh
   ! UYARI: katot kesim potansiyeli ~3.1 V termodinamik oksidasyon sınırının (3.0 V) üstünde; çalışma pasifleştirici arayüze (kaplama) dayanır.
 ```
 
@@ -120,39 +120,39 @@ Katot: Na3V2(PO4)2F3 (NVPF) | SE: Na2(CB9H10)(CB11H12) (karışık karba-kloso-b
 Çalışma sıcaklığı 35 °C → σ = 95.99 mS/cm, toplam ASR ≈ 8.5 Ω·cm²
 Katmanlar (tekrar birimi):
   - Al folyo (katot)                12.0 µm     3.24 mg/cm²
-  - Katot kompozit                 237.6 µm    47.62 mg/cm²
+  - Katot kompozit                 233.3 µm    46.95 mg/cm²
   - SE ayırıcı                      20.0 µm     2.50 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    45.4 µm     0.97 mg/cm²
   - Al folyo (anot)                 12.0 µm     3.24 mg/cm²
   - Na metal anot (fazlalık; şarjlı kalınlık)    45.4 µm     0.97 mg/cm²
   - SE ayırıcı                      20.0 µm     2.50 mg/cm²
-  - Katot kompozit                 237.6 µm    47.62 mg/cm²
-Tekrar birimi: 630 µm, 108.7 mg/cm², 8.0 mAh/cm², 3.90 V
-Yığın: 287 Wh/kg, 495 Wh/L
-Hücre (100×300 mm pouch, 25 birim): 60.0 Ah, 844 g, 530 mL → 277 Wh/kg, 442 Wh/L
-Element bütçesi: B 0.65 kg/kWh, Na 0.55 kg/kWh, V 0.52 kg/kWh, Li 0.00 kg/kWh
-Malzeme maliyeti (varsayımsal ölçek): 457 USD/kWh
+  - Katot kompozit                 233.3 µm    46.95 mg/cm²
+Tekrar birimi: 621 µm, 107.3 mg/cm², 8.0 mAh/cm², 3.90 V
+Yığın: 291 Wh/kg, 502 Wh/L
+Hücre (100×300 mm pouch, 25 birim): 60.0 Ah, 834 g, 522 mL → 281 Wh/kg, 448 Wh/L
+Element bütçesi: B 0.64 kg/kWh, Na 0.55 kg/kWh, V 0.52 kg/kWh, Li 0.00 kg/kWh
+Malzeme maliyeti (varsayımsal ölçek): 452 USD/kWh
   ! KRİTİK: katot kesim potansiyeli ~4.3 V, elektrolitin pasifleşmeyle ulaştığı sınırı (4.2 V) aşıyor.
 ```
 
 ```
 == BorPil-C (Sert karbon | Na2(B12H12)(B10H10) | NVP) — dendritsiz güvenli varyant ==
 Katot: Na3V2(PO4)3 (NASICON, NVP) | SE: Na2(B12H12)0.5(B10H10)0.5 (eş-molar kloso-borat karışımı) | Anot: Sert karbon (hard carbon)
-Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 29.2 Ω·cm²
+Çalışma sıcaklığı 45 °C → σ = 3.12 mS/cm, toplam ASR ≈ 28.9 Ω·cm²
 Katmanlar (tekrar birimi):
   - Al folyo (katot)                12.0 µm     3.24 mg/cm²
-  - Katot kompozit                 179.7 µm    38.96 mg/cm²
+  - Katot kompozit                 176.4 µm    38.41 mg/cm²
   - SE ayırıcı                      30.0 µm     4.50 mg/cm²
   - Sert karbon (hard carbon) kompozit anot   123.5 µm    17.33 mg/cm²
   - Al folyo (anot)                 12.0 µm     3.24 mg/cm²
   - Sert karbon (hard carbon) kompozit anot   123.5 µm    17.33 mg/cm²
   - SE ayırıcı                      30.0 µm     4.50 mg/cm²
-  - Katot kompozit                 179.7 µm    38.96 mg/cm²
-Tekrar birimi: 690 µm, 128.1 mg/cm², 6.0 mAh/cm², 3.17 V
-Yığın: 149 Wh/kg, 276 Wh/L
-Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 1306 g, 762 mL → 144 Wh/kg, 247 Wh/L
-Element bütçesi: B 1.34 kg/kWh, Na 0.95 kg/kWh, V 0.64 kg/kWh, Li 0.00 kg/kWh
-Malzeme maliyeti (varsayımsal ölçek): 178 USD/kWh
+  - Katot kompozit                 176.4 µm    38.41 mg/cm²
+Tekrar birimi: 684 µm, 127.0 mg/cm², 6.0 mAh/cm², 3.17 V
+Yığın: 150 Wh/kg, 278 Wh/L
+Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 1295 g, 754 mL → 145 Wh/kg, 250 Wh/L
+Element bütçesi: B 1.33 kg/kWh, Na 0.95 kg/kWh, V 0.64 kg/kWh, Li 0.00 kg/kWh
+Malzeme maliyeti (varsayımsal ölçek): 182 USD/kWh
   ! UYARI: katot kesim potansiyeli ~3.8 V termodinamik oksidasyon sınırının (3.0 V) üstünde; çalışma pasifleştirici arayüze (kaplama) dayanır.
 ```
 
@@ -176,47 +176,113 @@ Element bütçesi: B 0.58 kg/kWh, Na 0.26 kg/kWh, V 0.00 kg/kWh, Li 0.00 kg/kWh
 Malzeme maliyeti (varsayımsal ölçek): 381 USD/kWh
 ```
 
-## 4. Paket (BorPil-A, 75 kWh, 400 V)
+## 4. Paket (75 kWh, 120s3p, 3 bağımsız dizi, pouch-in-frame)
 
+### 4a. Baz çizgisi — BorPil-A-alt
 ```
-== Paket: C-segment sedan/SUV — 75 kWh hedef, 400 V ==
-Hücre: BorPil-A (Na | Na2(B12H12)(B10H10) | NVP)
-Mimari: 119s3p = 357 hücre × 63.0 Ah, 401 V nominal
-Enerji: 75.8 kWh brüt / 69.7 kWh kullanılabilir
-Kütle 523 kg (145 Wh/kg), hacim 401 L (189 Wh/L)
-Element bütçesi: B 72.1 kg, Na 73.4 kg, V 45.7 kg, Li 0.0 kg
-Akım yoğunluğu: sürekli 3.17 mA/cm², tepe 7.92 mA/cm²
-Isıl: kayıp 10.1 W/K (ΔT=40 K → 403 W); -10→25 °C ön ısıtma 5.1 kWh
-Maliyet (varsayımsal ölçek): 17,464 USD → 230 USD/kWh
+== Paket: C-segment sedan/SUV — 75 kWh hedef, 404 V ==
+Hücre: BorPil-A-alt (Na | Na2(B12H12)(B10H10) | NVP) — 1. nesil TİCARİ BAZ ÇİZGİSİ (60 µm SE, 50 µm Na, 30 Ω·cm²)
+Mimari: 120s3p = 360 hücre × 61.2 Ah, 404 V nominal — 3 bağımsız 120s dizi (dizi başına akım sensörü + kontaktör)
+Enerji: 74.2 kWh brüt / 68.3 kWh kullanılabilir
+Kütle 596 kg (125 Wh/kg), hacim 512 L (145 Wh/L)
+Element bütçesi: B 92.3 kg, Na 101.6 kg, V 44.8 kg, Li 0.0 kg
+Akım yoğunluğu: sürekli 3.23 mA/cm², tepe 8.08 mA/cm²
+Isıl: kayıp 10.1 W/K (ΔT=40 K → 403 W); -10→25 °C ön ısıtma 5.8 kWh
+Maliyet (varsayımsal ölçek): 30,612 USD → 412 USD/kWh
+Elektrik: pencere 283–452 V, tepe akım 495 A, tab sürekli 2.2 A/mm²; hızlı şarj (75 kW) için paket ≥ 44 °C; beklenen kısa devre akımı 45 °C: 5.0 kA, −10 °C: 186 A
+Isıtıcı güvenliği: takılı kalırsa +17 K/h, 35 °C → Na erimesi 248 dk; bağımsız donanım kesici 80 °C
+  ! UYARI: −10 °C'de beklenen kısa devre akımı (186 A) sürekli çalışma akımının 2 katından düşük → sigorta soğukta kısa devreyi ayırt edemez; akım-plausibilite/dI/dt ile kontaktör açma gerekir.
 ```
 
-## 5. Sürüş simülasyonu (WLTP-benzeri sentetik çevrim, C-segment)
+### 4b. Hedef — BorPil-A
+```
+== Paket: C-segment sedan/SUV — 75 kWh hedef, 404 V ==
+Hücre: BorPil-A (Na | Na2(B12H12)(B10H10) | NVP) — 1. nesil hedef / üst bant
+Mimari: 120s3p = 360 hücre × 61.2 Ah, 404 V nominal — 3 bağımsız 120s dizi (dizi başına akım sensörü + kontaktör)
+Enerji: 74.2 kWh brüt / 68.3 kWh kullanılabilir
+Kütle 519 kg (143 Wh/kg), hacim 418 L (177 Wh/L)
+Element bütçesi: B 70.0 kg, Na 71.6 kg, V 44.8 kg, Li 0.0 kg
+Akım yoğunluğu: sürekli 3.23 mA/cm², tepe 8.08 mA/cm²
+Isıl: kayıp 10.1 W/K (ΔT=40 K → 403 W); -10→25 °C ön ısıtma 5.0 kWh
+Maliyet (varsayımsal ölçek): 26,607 USD → 358 USD/kWh
+Elektrik: pencere 283–452 V, tepe akım 495 A, tab sürekli 2.2 A/mm²; hızlı şarj (75 kW) için paket ≥ 45 °C; beklenen kısa devre akımı 45 °C: 7.7 kA, −10 °C: 305 A
+Isıtıcı güvenliği: takılı kalırsa +20 K/h, 35 °C → Na erimesi 216 dk; bağımsız donanım kesici 80 °C
+  ! UYARI: −10 °C'de beklenen kısa devre akımı (305 A) sürekli çalışma akımının 2 katından düşük → sigorta soğukta kısa devreyi ayırt edemez; akım-plausibilite/dI/dt ile kontaktör açma gerekir.
+```
 
-| Senaryo | Menzil (km) | Tüketim (kWh/100 km) | Paket T başlangıç→bitiş (°C) | Min hücre gerilimi (V) | Ort. I²R ısı (W) | Isıtıcı (kWh) | Güç kısıtı (s) / açık (kWh) |
+## 5. Sürüş simülasyonu (WLTP-benzeri sentetik çevrim, C-segment) — baz / hedef
+
+Akım sınırları tüm modüllerde ortaktır (deşarj CCD×2, rejen CCD/1.5); güç kısıtında araç kalan güçle ulaşabildiği hıza düşer, fazla rejen mekanik frene gider.
+
+| Senaryo | Menzil km (baz / hedef) | Tüketim kWh/100 km | Paket T (°C) | Isıtıcı kWh | Güç kısıtı s / açık kWh | Rejen kaybı kWh | Ort. hız km/h |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| 20 °C, ısıtıcı hedef 35 °C (tasarım stratejisi) | 476 | 14.7 | 20→35 | 3.22 | 92 | 2.7 | 0 / 0.00 |
-| 20 °C, ısıtıcı kapalı | 490 | 14.2 | 20→28 | 3.17 | 159 | 0.0 | 0 / 0.00 |
-| −10 °C, ısıtıcı hedef 35 °C (6 kW) | 428 | 16.3 | -10→35 | 2.87 | 153 | 9.0 | 0 / 0.00 |
-| −20 °C, ısıtıcı kapalı (stres senaryosu) | 454 | 15.4 | -20→12 | 2.36 | 735 | 0.0 | 427 / 1.07 |
-| 35 °C | 495 | 14.1 | 35→39 | 3.25 | 79 | 0.0 | 0 / 0.00 |
+| 20 °C, ısıtıcı 35 °C + 0.8 kW atık ısı (strateji) | **457** / 474 | 15.0 / 14.4 | 20→40 (maks 40) | 2.0 | 0 / 0.0 | 0.0 | 48 |
+| 20 °C, ısıtıcı kapalı | **472** / 485 | 14.5 / 14.1 | 20→40 (maks 40) | 0.0 | 0 / 0.0 | 0.0 | 48 |
+| −10 °C, ısıtıcı 35 °C (3 kW PTC + atık ısı) | **440** / 454 | 15.5 / 15.1 | -10→40 (maks 40) | 5.7 | 759 / 1.8 | 0.0 | 48 |
+| −10 °C, şebekeden 35 °C'ye ön ısıtılmış | **474** / 486 | 14.4 / 14.1 | 35→40 (maks 40) | 0.0 | 0 / 0.0 | 0.0 | 48 |
+| −20 °C, ısıtıcı arızalı (stres) | **522** / 545 | 13.1 / 12.5 | -20→31 (maks 31) | 0.0 | 5781 / 16.5 | 1.8 | 46 |
+| 35 °C | **475** / 486 | 14.4 / 14.0 | 35→42 (maks 42) | 0.0 | 0 / 0.0 | 0.0 | 48 |
+| 40 °C, otoyol 130 km/h | **309** / 315 | 22.1 / 21.7 | 40→47 (maks 47) | 0.0 | 0 / 0.0 | 0.0 | 129 |
 
-Araç toplam kütlesi 2023 kg (glider + yük + paket). Tüketim, bataryadan çekilen toplam enerjiyi (ısıtıcı dâhil, şarj kayıpları hariç) içerir; uç enerjisi ∫V·I dt = 69.1 kWh (kullanılan 69.7 kWh, fark I²R kaybı).
+Araç toplam kütlesi 2096 kg (baz; glider + yük + paket). Tüketim bataryadan çekilen toplam enerjidir (ısıtıcı dâhil, şebeke şarj kayıpları hariç). −20 °C 'ısıtıcı arızalı' satırı: araç çevrimi izleyemez (güç kısıtı süresi ve açık büyük); menzil değeri düşük hızda sürüşe karşılık gelir ve operasyonel bir vaat değildir.
 
-## 6. Li-iyon ile karşılaştırma (75 kWh paket)
+## 6. DC hızlı şarj (10 → 80 % SOC, 150 kW cihaz, şebekeden 20 kW ısıtıcı) — baz / hedef
+
+| Paket başlangıç T | Süre dk | Ortalama / tepe güç kW | Isıtıcı kWh | I²R kWh | Bitiş T °C | Sınırlayıcı (süre kesri) |
+|---:|---:|---:|---:|---:|---:|---|
+| 45 °C | **32** / 34 | 102 / 140 | 0.0 | 2.10 | 57 | ccd %100 |
+| 25 °C | **38** / 39 | 91 / 130 | 3.1 | 2.09 | 55 | ccd %100 |
+| 0 °C | **49** / 49 | 75 / 128 | 7.1 | 2.09 | 55 | ccd %85, on_isitma %15 |
+| -10 °C | **54** / 53 | 70 / 128 | 8.8 | 2.09 | 55 | ccd %77, on_isitma %23 |
+
+Hızlı şarj sıcaklık kapısı: 75 kW için paket ≥ 44 °C (CCD/1.5). Soğuk pakette şarj süresi ısıtma gücüyle belirlenir; bu yüzden ısıtıcı DC şarj cihazından 20 kW ile beslenir.
+
+## 7. Isıtma seçenekleri (−10 °C → 45 °C ön ısıtma; kurul P5/P6)
+
+| Yöntem | Süre dk | Enerji kWh | Not |
+|---|---:|---:|---|
+| PTC 3 kW (park, paketten) | 202 | 10.1 | |
+| PTC 6 kW | 96 | 9.6 | |
+| Şebekeden 20 kW (DC şarj istasyonu) | 28 | 9.3 | |
+| Darbe (AC) ısıtma 1C rms, tek başına | 269 | 12.1 | |
+| Darbe 1C + PTC 3 kW | 86 | 10.2 | |
+
+Darbe ısıtma −20 °C'de 42 kW, 0 °C'de 11 kW, 25 °C'de 2.6 kW üretir (direnç ısındıkça düşer → kendini sınırlar): −20 → 0 °C **10 dk / 3.7 kWh**. Sonuç: darbe ısıtma derin soğuktan çıkış aracı, tam ön ısıtma için şebeke gücü veya atık ısı gerekir. Na/kloso-borat arayüzünün kHz AC dayanımı deneysel doğrulama planındadır.
+
+## 8. Elektrik mimarisi ve güvenlik kontrolleri (baz paket)
+
+- Gerilim penceresi 283–452 V (invertör DC-link tavanı 500 V, şarj cihazı 500 V sınıfı); tepe akım 495 A; tab sürekli 2.2 A/mm².
+- Beklenen kısa devre akımı: 45 °C'de 5.0 kA, −10 °C'de 186 A (sürekli akımın 2 katından düşük → sigorta soğukta ayırt edemez; akım-plausibilite + dI/dt ile kontaktör açma).
+- Isıtıcı takılı kalma: +17 K/h, 35 °C'den Na erimesine 248 dk (3 kW PTC ile); bağımsız donanım kesici 80 °C + ayrı ısıtıcı kontaktörü + çift NTC (ASIL D → B(D)+B(D)).
+- 3 bağımsız 120s dizi: dizi akım dengesizliği = Na dendrit yumuşak kısa devre dedektörü; 2/3 güçle hata toleransı.
+- ! UYARI: −10 °C'de beklenen kısa devre akımı (186 A) sürekli çalışma akımının 2 katından düşük → sigorta soğukta kısa devreyi ayırt edemez; akım-plausibilite/dI/dt ile kontaktör açma gerekir.
+
+## 9. Maliyet (gen-1 gerçekçi model: imalat ×1.75, ilk geçiş verimi %75, paket +32 USD/kWh)
+
+| SE fiyatı USD/kg | Verim | Baz (A-alt) paket USD/kWh | Hedef (A) paket USD/kWh |
+|---:|---:|---:|---:|
+| 50 | %75 | 412 | 358 |
+| 50 | %90 | 313 | 274 |
+| 25 | %90 | 234 | 214 |
+| 15 | %95 | 194 | 181 |
+
+Ekonomik hedef bandı (165–200 USD/kWh) için SE ≤ 25 USD/kg **ve** verim ≥ %90 **ve** imalat çarpanı ≤ 1.55 (10 GWh ölçeği) gerekir; 120 USD/kWh mevcut malzeme karmasıyla ulaşılabilir değildir (SE ≤ 15 USD/kg + kompozitte SE %18 + A-Fe katot gen-2).
+
+## 10. Li-iyon ile karşılaştırma (75 kWh paket)
 
 | Kimya | Wh/kg (hücre) | Wh/L (hücre) | USD/kWh (hücre, varsayım) | Li (kg/75 kWh) | B (kg) | Co (kg) | Ni (kg) | Yanıcı elektrolit | Paket kütlesi (kg) | Paket hacmi (L) |
 |---|---:|---:|---:|---:|---:|---:|---:|:--:|---:|---:|
-| BorPil-A | 201 | 337 | 208 | 0.0 | 72.1 | 0.0 | 0.0 | hayır | 523 | 401 |
-| BorPil-A-alt | 175 | 276 | 244 | 0.0 | 94.9 | 0.0 | 0.0 | hayır | 602 | 490 |
-| BorPil-A0 | 182 | 335 | 170 | 0.0 | 80.0 | 0.0 | 0.0 | hayır | 577 | 404 |
-| BorPil-A-Fe | 176 | 315 | 163 | 0.0 | 82.9 | 0.0 | 0.0 | hayır | 595 | 427 |
-| BorPil-B | 277 | 442 | 709 | 0.0 | 48.7 | 0.0 | 0.0 | hayır | 377 | 304 |
-| BorPil-C | 144 | 247 | 276 | 0.0 | 101.5 | 0.0 | 0.0 | hayır | 727 | 545 |
-| BorPil-S | 403 | 423 | 591 | 0.0 | 43.7 | 0.0 | 0.0 | hayır | 258 | 316 |
+| BorPil-A | 203 | 341 | 242 | 0.0 | 70.0 | 0.0 | 0.0 | hayır | 519 | 418 |
+| BorPil-A-alt | 177 | 279 | 283 | 0.0 | 92.3 | 0.0 | 0.0 | hayır | 596 | 512 |
+| BorPil-A0 | 184 | 339 | 190 | 0.0 | 77.5 | 0.0 | 0.0 | hayır | 571 | 421 |
+| BorPil-A-Fe | 178 | 319 | 181 | 0.0 | 80.9 | 0.0 | 0.0 | hayır | 592 | 448 |
+| BorPil-B | 281 | 448 | 791 | 0.0 | 48.6 | 0.0 | 0.0 | hayır | 388 | 326 |
+| BorPil-C | 145 | 250 | 319 | 0.0 | 98.6 | 0.0 | 0.0 | hayır | 718 | 569 |
+| BorPil-S | 403 | 423 | 667 | 0.0 | 44.1 | 0.0 | 0.0 | hayır | 272 | 343 |
 | Li-iyon NMC811 (pouch, 2025 sınıfı) | 265 | 700 | 100 | 8.2 | 0.0 | 6.8 | 56.2 | evet | 393 | 179 |
 | Li-iyon LFP (prizmatik, 2025 sınıfı) | 170 | 380 | 75 | 6.8 | 0.0 | 0.0 | 0.0 | evet | 613 | 329 |
 
-## 7. Grafikler
+## 11. Grafikler
 
 ![iletkenlik](iletkenlik_arrhenius.png)
 
@@ -229,3 +295,5 @@ Araç toplam kütlesi 2023 kg (glider + yük + paket). Tüketim, bataryadan çek
 ![katman](katman_yigini.png)
 
 ![iko](b12h12_ikosahedron.png)
+
+![isitma](isitma_ve_sarj.png)
