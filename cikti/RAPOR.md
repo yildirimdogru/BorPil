@@ -362,3 +362,24 @@ Yorum: LT ve B, karba-kloso ile omik kaybı 10 °C'de düşürür; **tepe güç 
 ![iko](b12h12_ikosahedron.png)
 
 ![isitma](isitma_ve_sarj.png)
+
+![yasayan](yasayan_isil_park.png)
+
+## 13. Yaşayan ısıl sistem (YIS, kurul P27)
+
+== Yaşayan ısıl sistem — 12 h park, ortam -10 °C ==
+Doğumda kullanıcıya görünen enerji: 65.3 kWh / 74.2 kWh brüt (yaşam payı 5.9 kWh gizlenir; UA 10.1 W/K).
+Gen-1 (parkta ısı yok): kalkış T=-10 °C, menzil 440 km, güç kısıtı 759 s, 10→80 % 55 dk.
+YIS prizsiz: T=29.1 °C, canli=True, gösterge %99, ısıtıcı 3.90 kWh. Sürüş hazır=True, menzil 469 km, kısıt 0 s, şarj 37 dk.
+YIS prizli: T=34.7 °C, canli=True, gösterge %100, şebeke 5.40 kWh. Sürüş kısıt 0 s, şarj 35 dk — LFP gibi hedef.
+TMS ölü: Ready=False, sürüş yasak=True.
+
+| Senaryo | Kalkış T °C | Canlı | Menzil km | Güç kısıtı s | 10→80 % dk |
+|---|---:|:---:|---:|---:|---:|
+| Gen-1, −10 °C 12 h | -10 | evet | 440 | 759 | 55 |
+| YIS prizsiz, −10 °C 12 h | 29.1 | true | 469 | 0 | 37 |
+| YIS prizli, −10 °C 12 h | 34.7 | true | 474 | 0 | 35 |
+| YIS prizsiz, −10 °C 48 h | 28.7 | true | 468 | 0 | 37 |
+| YIS prizli, 40 °C 12 h | 37.6 | true | 475 | 0 | 33 |
+
+Kullanıcı 0–100 gösterge yaşam payını gizler. TMS arızası veya T < 10 °C → Ready yok (paket ölü; şebekeden diriltme ayrı). P19 (parkta ısı yok) varsayılan SKU olarak durur; YIS paralel işletim modudur. Ayrıntı: `docs/11_yasayan_isil_sistem.md`.

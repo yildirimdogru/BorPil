@@ -308,3 +308,10 @@ bu kimyanın ev ödevi.
 Sonraki iş paketleri (kod/deney, bu tutanakta model değişmedi): e-aks kayıp-ısıtma kavramı;
 P24 tampon kütle-maliyet bandı; P5 EIS kapısı; iklim KPI’sinin `surus` senaryosuna eklenmesi
 ayrı görev.
+
+---
+
+## 10. Sonraki oturum (yapıldı)
+
+Proje sahibi soğuk sürüş/şarj için **yaşayan ısıtma–soğutma** istedi (`docs/11`, P27–P32,
+`borpil/yasayan_isil.py`). Bu tutanak değişmez; YIS P19’u iptal etmez, yanına işletim modu ekler.

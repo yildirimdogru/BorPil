@@ -11,6 +11,7 @@ malzemeler    : malzeme veri tabanı (yoğunluk, kapasite, potansiyel, maliyet, 
 termodinamik  : Gibbs/Nernst, teorik kapasite ve enerji yoğunluğu hesapları
 elektrolit    : kloso-borat iyonik iletkenliğinin Arrhenius modeli ve faz geçişleri
 kimya_sicaklik: 10–45 °C penceresi taraması (bulk σ vs CCD/arayüz)
+yasayan_isil  : yaşayan ısıl sistem (YIS): yaşam payı, park tutma, TMS ölümü, LFP-gibi UX
 geometri      : [B12H12]2- ikosahedronu ve anyon boyutu; hücre/paket paketleme geometrisi
 hucre         : katman yığını (stack) modeli → Wh/kg, Wh/L, bor kütlesi
 paket         : EV paket boyutlandırma (enerji, gerilim, kütle, hacim, maliyet)
@@ -30,6 +31,7 @@ from . import (
     simulasyon,
     karsilastirma,
     kimya_sicaklik,
+    yasayan_isil,
 )
 
 __all__ = [
@@ -43,6 +45,7 @@ __all__ = [
     "simulasyon",
     "karsilastirma",
     "kimya_sicaklik",
+    "yasayan_isil",
 ]
 
 __version__ = "0.1.0"
