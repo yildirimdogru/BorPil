@@ -81,4 +81,7 @@ dendritsiz, 144 Wh/kg), **S** (Na-S, ~400 Wh/kg — spekülatif, uzun vade).
 
 Ayrıntılar: `docs/02` (kimya), `docs/03` (malzeme/üretim), `docs/04` (hücre/paket/ısıl/BMS),
 `docs/05` (güvenlik/çevre), `docs/06` (riskler, 1. tur hakem bulguları, yol haritası),
-`docs/07` (elektrik-elektronik ve üretici incelemeleri, kurul kararları), `cikti/RAPOR.md` (sayılar).
+`docs/07` (elektrik-elektronik ve üretici incelemeleri, kurul kararları),
+`docs/08` (paket maden ve element bütçesi),
+`docs/urun/` (satışa-hazır ürün formu: veri formu, entegrasyon, güvenlik/garanti, broşür),
+`cikti/RAPOR.md` (sayılar).
