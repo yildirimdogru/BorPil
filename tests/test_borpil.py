@@ -163,9 +163,9 @@ def test_hucre_temel_tasarim_araligi():
 
 
 def test_kutle_dengesi_bagimsiz_el_hesabi():
-    """Hakem el hesabı (BorPil-A): katot 27.27/38.96 mg/cm², SE 4.50, Na fazlası 1.94, Al 3.24 ×2."""
+    """Hakem el hesabı (BorPil-A): katot 27.27 mg/cm² aktif / %71 → kompozit, SE 4.50, Na fazlası 1.94, Al 3.24 ×2."""
     h = hc.hesapla(hc.BORPIL_A)
-    katot = 3.0 / 110.0 * 1e3 / 0.70
+    katot = 3.0 / 110.0 * 1e3 / 0.71
     se = 30e-4 * 1.50 * 1e3
     na_fazla = 20e-4 * 0.97 * 1e3
     al = 12e-4 * 2.70 * 1e3
@@ -231,7 +231,7 @@ def test_stack_hucreden_buyuk():
 def test_paket_hedef_enerjiyi_tutturur():
     p = pk.boyutlandir(hc.BORPIL_A)
     assert p.gercek_enerji_kWh == pytest.approx(75.0, rel=0.02)
-    assert abs(p.nominal_gerilim_V - 400) < 5
+    assert p.seri == 120 and abs(p.nominal_gerilim_V - 404) < 2   # kurul P9
     assert p.hucre_sayisi == p.seri * p.paralel
     assert p.li_kg == 0.0
     assert 50 < p.bor_kg < 100
@@ -312,9 +312,51 @@ def test_surus_menzil_makul_ve_enerji_tutarli():
 
 def test_soguk_guc_acigi_kaydedilir():
     p = pk.boyutlandir(hc.BORPIL_A)
-    s = sm.surus_simulasyonu(p, T_ortam_C=-20, isitici_hedef_C=None)
-    assert s.guc_kisiti_s > 0 and s.guc_acigi_kWh > 0
-    assert s.V_min_hucre == pytest.approx(sm.v_min_hucre(p.hucre), abs=1e-6)
+    s = sm.surus_simulasyonu(p, T_ortam_C=-20, isitici_hedef_C=None, atik_isi_kW=0.0)
+    # Soğukta deşarj CCD sınırı devrede: çevrimin büyük kısmı kısıtlı, araç yavaşlar, rejen mekanik frene gider
+    assert s.guc_kisiti_s > 0.2 * s.sure_h * 3600 and s.guc_acigi_kWh > 10
+    assert s.ort_hiz_kmh < 46
+    assert s.rejen_kaybi_kWh > 1.0
+    # atık ısı geri kazanımı (0.8 kW) ile kısıt süresi belirgin azalır
+    s2 = sm.surus_simulasyonu(p, T_ortam_C=-20, isitici_hedef_C=None, atik_isi_kW=0.8)
+    assert s2.guc_kisiti_s < s.guc_kisiti_s
+
+
+def test_akim_siniri_ortak_ve_yonlu():
+    p = pk.boyutlandir(hc.BORPIL_A)
+    h = p.hucre
+    I_d = sm.akim_siniri_A(h, 25, "desarj")
+    I_s = sm.akim_siniri_A(h, 25, "sarj")
+    j = 1.5 * h.elektrot_alani_cm2 / 1e3
+    assert I_d == pytest.approx(j * sm.DESARJ_TOLERANSI)
+    assert I_s == pytest.approx(j / sm.SARJ_GUVENLIK_KATSAYISI)
+    # tepe güç fonksiyonu ile sürüş simülasyonu aynı sınırı kullanır: −10 °C'de tepe güç < 10 kW
+    assert sm.maks_guc_kW(p, -10) < 10
+    assert sm.maks_sarj_gucu_kW(p, 45) >= 75 > sm.maks_sarj_gucu_kW(p, 35)
+
+
+def test_sarj_simulasyonu_tutarli():
+    p = pk.boyutlandir(hc.BORPIL_A)
+    s45 = sm.sarj_simulasyonu(p, T_baslangic_C=45)
+    s25 = sm.sarj_simulasyonu(p, T_baslangic_C=25)
+    sm10 = sm.sarj_simulasyonu(p, T_baslangic_C=-10)
+    assert s45.sure_dk < s25.sure_dk < sm10.sure_dk
+    assert s45.enerji_hucre_kWh == pytest.approx(0.70 * p.gercek_enerji_kWh, rel=0.02)
+    assert s45.enerji_sebeke_kWh > s45.enerji_hucre_kWh            # I²R + ısıtıcı
+    assert s45.v_maks_hucre <= p.hucre.gerilim_V + 0.40 + 1e-6
+    assert sm10.sinir_dagilimi["on_isitma"] > 0.2
+    assert s45.T_bitis_C <= 61.0                                    # soğutma tavanı
+
+
+def test_paket_elektrik_kontrolleri():
+    p = pk.boyutlandir(hc.BORPIL_A)
+    assert p.V_min_paket == pytest.approx(p.seri * sm.v_min_hucre(p.hucre))
+    assert p.V_maks_paket < p.gereksinim.invertor_dc_link_maks_V
+    assert p.tab_akim_yogunlugu_surekli_A_mm2 < 2.5
+    assert 40 <= p.hizli_sarj_min_T_C <= 46
+    assert p.kisa_devre_akimi_45C_kA > 5 and p.kisa_devre_akimi_m10C_A < 400
+    g800 = pk.PaketGereksinimi(nominal_gerilim_V=800.0)
+    assert any("KRİTİK" in u for u in pk.boyutlandir(hc.BORPIL_A, g800).uyarilar)
 
 
 def test_dusuk_gerilimli_kimyada_guc_ve_desarj_calisir():
@@ -333,3 +375,34 @@ def test_karsilastirma_tablosu():
     assert all(s.li_kg == 0.0 and s.yanici == "hayır" for s in bor)
     md = ks.markdown_tablo(satirlar, 75)
     assert md.count("\n") == len(satirlar) + 2
+
+
+def test_kurul_kararlari_parametrelerde():
+    g = pk.PaketGereksinimi()
+    assert g.imalat_carpani == 1.75 and g.ilk_gecis_verimi == 0.75 and g.paket_ek_usd_kWh == 32.0   # P13
+    assert g.hucre_paket_hacim_orani == 0.52 and g.fikstur_ek_kg == 12.0                              # P10
+    assert g.bagimsiz_dizi and g.isitici_guc_kW == 3.0                                                 # P8, P5
+    assert hc.KompozitRecete().karbon == pytest.approx(0.02)                                          # P12
+    p = pk.boyutlandir(hc.BORPIL_A_ALT)
+    assert 120 < p.paket_wh_kg < 130 and 380 < p.maliyet_usd_kWh < 440
+
+
+def test_isitici_takili_kalma_analizi():
+    p = pk.boyutlandir(hc.BORPIL_A)
+    # 3 kW PTC, UA≈10 W/K, C≈520 kJ/K → ~+20 K/h; Na erimesine saatler; 6 kW ile yaklaşık yarısı
+    assert 15 < p.isitici_takili_isinma_K_per_h < 25
+    p6 = pk.boyutlandir(hc.BORPIL_A, pk.PaketGereksinimi(isitici_guc_kW=6.0))
+    assert p6.isitici_takili_na_erime_dk < 0.6 * p.isitici_takili_na_erime_dk
+    assert p6.isitici_takili_na_erime_dk < 120
+
+
+def test_darbe_isitma_soguk_ta_guclu_ve_kendini_sinirlar():
+    p = pk.boyutlandir(hc.BORPIL_A)
+    P = [sm.darbe_isitma_gucu_kW(p, T, 1.0) for T in (-20, -10, 0, 25)]
+    assert P[0] > P[1] > P[2] > P[3] > 0
+    assert P[0] > 15 and P[3] < 5
+    sure, E = sm.on_isitma_suresi_dk(p, -20, 0, darbe_c_orani=1.0)
+    assert sure < 20 and E < 6
+    sure20, _ = sm.on_isitma_suresi_dk(p, -10, 45, ptc_kW=20)
+    sure6, _ = sm.on_isitma_suresi_dk(p, -10, 45, ptc_kW=6)
+    assert sure20 < 0.4 * sure6

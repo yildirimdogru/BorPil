@@ -37,8 +37,8 @@ kısıt cevher değil, **hidroborat sentez kapasitesi**dir.
 | Na₃V₂(PO₄)₂F₃ (2. nesil) | NVP + NaF, hidrotermal/katı hâl | 120 mAh/g, 3.9 V | Yalnız karba-kloso-borat + pasifleştirici arayüzle. |
 
 ### Katot kompozit reçetesi (kütle)
-%70 aktif (karbon kaplı), %25 kloso-borat SE, %3 iletken karbon (CB + az CNT), %2 elastomer
-bağlayıcı (NBR, ksilen içinde). Gözeneklilik hedefi ≤ %8 (izostatik pres sonrası).
+%71 aktif (karbon + ALD NaNbO₃/Na₃PO₄ kaplı), %25 kloso-borat SE, %2 iletken karbon (CB + CNT;
+karbon hidroborat oksidasyonunu hızlandırdığı için azaltıldı), %2 elastomer bağlayıcı (NBR, ksilen içinde). Gözeneklilik hedefi ≤ %8 (izostatik pres sonrası).
 Yükleme 3 mAh/cm² (tek yüz) → 39 mg/cm², ~180 µm.
 
 **Arayüz kaplaması (kritik):** NVP parçacıkları üzerine 5–10 nm NaNbO₃ veya Na₃PO₄ tabakası
@@ -72,6 +72,11 @@ sınırlayan bir pasif tabakaya dönüştürmek.
 
 ## 3.5 Hücre montajı — proses akışı
 
+Kurul kararları (docs/07): format **pouch-in-frame** (çelik/kompozit çerçeve + disk yay, 1.2 ± 0.3 MPa);
+kuru oda **< 100 ppm H₂O** + hat içi XRD/FTIR hidrat kontrolü; kılıf metalize polimer + epoksi kenar;
+pilotta batch WIP, ≥ 3 GWh'de 200 MPa kalender + bölgesel WIP; gen-1 ilk geçiş verimi %60–75 (SE film
+pinhole ve WIP delaminasyonu ana kayıp), ±1.5–2 % kapasite eşleştirme.
+
 1. Katot kompozit döküm (çift taraflı Al, slot-die) → kurutma → kalender.
 2. SE filmi Mylar'dan katot üzerine transfer-laminasyon (60 °C, 50 MPa hadde).
 3. Na/Al anot folyosu laminasyonu.
@@ -95,8 +100,10 @@ yalnız laminasyon istasyonunda.
 | Al folyo | ~23 | 5 | Cu yok |
 | Karbon, bağlayıcı | ~14 | 10–15 | |
 
-Model: 134 USD/kWh malzeme (SE 50 USD/kg) → 208 USD/kWh hücre (×1.55 imalat) → 230 USD/kWh
-paket. Duyarlılık (paket, USD/kWh): SE 20 → **165**, 50 → 230, 100 → 340, 200 → 558.
-SE tek başına malzeme maliyetinin ~%55'idir (1.41 kg SE/kWh). LFP ile rekabet için SE
-≤ 20–25 USD/kg **ve** kompozitte SE payının %25 → %18'e düşürülmesi gerekir. Grafik:
-`cikti/duyarlilik.png` (logaritmik fiyat ekseni, 10–200 USD/kg).
+Model (kurul P13, gen-1 gerçekçi): malzeme / ilk geçiş verimi (%75) × imalat çarpanı (1.75) + paket
+ekleyici (32 USD/kWh) + 3 dizi donanımı. Hedef A: 136 USD/kWh malzeme → **358 USD/kWh** paket; baz
+A-alt: 162 → **412 USD/kWh** (SE 50 USD/kg). Ölçek senaryosu (SE 25, verim %90, ×1.55): 214 / 234.
+SE tek başına malzeme maliyetinin ~%55'idir (1.4–1.9 kg SE/kWh). Ekonomik hedef bandı 165–200 USD/kWh
+için SE ≤ 25 USD/kg **ve** verim ≥ %90 **ve** 10 GWh ölçeği birlikte gerekir; 120 USD/kWh mevcut karma
+ile ulaşılamaz (gen-2: SE %18, A-Fe katot, SE ≤ 15 USD/kg). Grafik: `cikti/duyarlilik.png`, tablo:
+`cikti/RAPOR.md §9`.

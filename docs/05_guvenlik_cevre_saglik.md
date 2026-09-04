@@ -29,7 +29,19 @@ Kalan iki risk **Na metal** ve **hidrojen**dir:
 Yüksek çalışma sıcaklığı (35–60 °C) elektrolit açısından sorunsuzdur (ısıl kararlılık çok
 üstte); tasarım sınırı Na'nın erime noktasıdır: BMS 80 °C'de gücü keser, 90 °C'de paketi ayırır.
 **Nem:** Na₂B₁₂H₁₂ hidrat (·4H₂O) oluşturur; hidrat hem iletkenliği düşürür hem Na ile
-reaksiyona girer → hermetik hücre, üretimde < %1 bağıl nem.
+reaksiyona girer → hermetik hücre, üretimde < 100 ppm H₂O (kurul P15).
+
+**Elektrik-elektronik kaynaklı tehlikeler (kurul P3, P4):**
+- *Isıtıcı takılı kalma:* yalıtımlı pakette (UA ≈ 10 W/K) ısıtıcı kendiliğinden sınırlanmaz; 3 kW'ta
+  +17–20 K/h, 6 kW'ta +40 K/h ve ~95 dk'da Na erimesi. ISO 26262 tehlike sınıfı ASIL D →
+  B(D)+B(D) ayrıştırma: BMS yazılım sınırı (80 °C güç kesme / 90 °C ayırma) + bağımsız donanım
+  (80 °C bimetal/termal sigorta, ayrı ısıtıcı kontaktörü, ayrı MCU, çift NTC).
+- *Soğukta kısa devre:* paket direnci −10 °C'de 25× büyük → kısa devre akımı 190–310 A (sürekli
+  akımın altında); sigorta ayırt edemez, paket ısınır, direnç düşer, akım katlanır (pozitif geri
+  besleme). Koruma: akım-plausibilite (paket ↔ invertör/şarj cihazı) + dI/dt ile kontaktör açma;
+  sigorta kesme kapasitesi ≥ 16 kA (60 °C durumu).
+- *Aşırı şarj:* kesim 3.77 V, pasifleşme tavanı 4.0 V (230 mV marj) → ASIL C; ölçüm ±5 mV.
+- *Söndürme:* D sınıfı + inert gaz; modül düzeyinde su yasak (Na).
 
 ## 5.2 Toksikoloji
 

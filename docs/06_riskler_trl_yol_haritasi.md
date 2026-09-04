@@ -11,7 +11,8 @@
 | Na metal anot, katı hâl, >3 mA/cm² | 3 | Kritik akım yoğunluğu çalışmaları |
 | Pouch ölçekli katı hâl imalatı (sülfür analoglarından transfer) | 5–6 | Sektörde pilot hatlar |
 | DBFC yığın | 4–5 | Prototip sistemler (kW sınıfı) |
-| **BorPil-A sistem** | **3–4** | Bu çalışma: modelle boyutlandırılmış, deneysel doğrulama bekliyor |
+| Darbe (AC) kendinden ısıtma, Na/kloso-borat arayüzü | 2–3 | Li-iyon'da ticari; hidroborat arayüzünde kHz dayanım verisi yok |
+| **BorPil-A sistem** | **3–4** | Bu çalışma: modelle boyutlandırılmış, iki tur bağımsız inceleme; deneysel doğrulama bekliyor |
 
 ## 6.2 Risk kaydı
 
@@ -29,7 +30,12 @@
 | R10 | Rakip: sıvı elektrolitli Na-iyon veya sülfür katı hâl Na | Yüksek | Orta | Bor içeriği + yanmazlık + Na-metal enerji yoğunluğu ile farklılaşma |
 | R11 | Nem: Na₂B₁₂H₁₂·4H₂O hidratı iletkenliği düşürür, Na ile reaksiyona girer | Orta | Orta | Hermetik hücre; üretimde <%1 RH; hidrat XRD kontrolü |
 | R12 | Na erime noktası (97.8 °C) ile çalışma sıcaklığı marjı | Düşük | Yüksek | BMS 80 °C güç kesme / 90 °C ayırma; yalıtım tasarımı aşırı ısınmayı da yavaşlatır → aktif izleme |
-| R13 | İletken karbonun hidroborat oksidasyonunu hızlandırması | Orta | Orta | Katot kaplama; karbon payı %3 → %2, CNT ile |
+| R13 | İletken karbonun hidroborat oksidasyonunu hızlandırması | Orta | Orta | Katot kaplama (zorunlu, kurul P12); karbon payı %3 → %2, CNT ile |
+| R14 | Isıtıcı takılı kalma → Na erimesi (yalıtımlı pakette kendiliğinden sınırlanmaz) | Düşük | Çok yüksek | Bağımsız 80 °C termal kesici + ayrı kontaktör + çift NTC; ASIL D → B(D)+B(D) (docs/07 P4) |
+| R15 | Soğukta kısa devre akımı sürekli akımın altında → sigorta ayırt edemez | Orta | Yüksek | Akım-plausibilite + dI/dt kontaktör açma; ≥ 16 kA kesme kapasiteli sigorta (P3) |
+| R16 | Saf pouch 1–2 MPa basıncı ve %10 kalınlık salınımını taşıyamaz | Yüksek | Yüksek | Pouch-in-frame, disk yaylı plaka, 1.2 ± 0.3 MPa (P10) |
+| R17 | Gen-1 verim %60–75 (SE film pinhole, WIP delaminasyon) → maliyet | Yüksek | Orta | Hat içi kalınlık/EIS QC, 60 µm fallback spesifikasyonu, WIP → kalender geçişi (P13, P16) |
+| R18 | Kloso-borat sentez kapasitesi (< 10 t/yıl) | Yüksek | Yüksek | NaBH₄ → B₁₀H₁₄ kapalı akış reaktörü; 5 yıllık ölçekleme planı; ikinci tedarikçi |
 
 ## 6.3 Hakem bulguları (H1 kimya/fizik, H2 sayısal model) ve yapılan düzeltmeler
 
@@ -62,7 +68,13 @@
 Kabul edilen ama modele alınmayan notlar: sert karbon ilk çevrim kaybı (N/P ile örtük), rejen
 akım sınırı (BMS notu, `docs/04`), gerçek WLTC hız noktaları (sentetik çevrim 24.1 km yeterli).
 
+2. tur (elektrik-elektronik + üretici) bulguları ve kurul kararları: `docs/07`.
+
 ## 6.4 Doğrulama planı (deneysel)
+
+Kurulun 2. turda eklediği maddeler (kHz AC arayüz dayanımı, ALD kaplama CV/XPS, nem < 100 ppm QC,
+WIP ↔ kalender ASR haritası, 8 hücreli modül güvenlik matrisi, 3 dizi yumuşak kısa devre enjeksiyonu,
+A/B/C numune hacimleri) `docs/07 §7.5`'tedir; aşağıdaki fazlara dağıtılır.
 
 **Faz 0 — Malzeme (gram ölçeği)**
 - Na₂B₁₂H₁₂, Na₂B₁₀H₁₀ sentezi (yerli NaBH₄'ten), eş-molar öğütme; XRD (bcc/fcc düzensiz faz),
@@ -87,12 +99,12 @@ akım sınırı (BMS notu, `docs/04`), gerçek WLTC hız noktaları (sentetik ç
 
 | KPI | 1. nesil (A) | 2. nesil (B) |
 |---|---|---|
-| Hücre Wh/kg / Wh/L | 190 / 340 | 260 / 440 |
-| Paket Wh/kg | 145 | 195 |
+| Hücre Wh/kg / Wh/L | 177 / 279 (baz A-alt); 203 / 341 (hedef A) | 260 / 440 |
+| Paket Wh/kg | 125 (baz) / 143 (hedef) | 195 |
 | Çevrim ömrü (%80 EOL) | 1500 | 2500 |
-| Hızlı şarj (10→80 %) | 45 dk (1C) | 25 dk |
-| Çalışma sıcaklığı | 25–60 °C (−20 °C'de sınırlı güç) | 10–70 °C |
-| Hücre maliyeti | 185 → 120 USD/kWh (SE fiyatına bağlı) | < 100 USD/kWh |
+| Hızlı şarj (10→80 %) | 32 dk (45 °C paket) / 54 dk (−10 °C, şebeke ısıtıcı ile) | 25 dk |
+| Çalışma sıcaklığı | 35–60 °C (ısıl strateji; −20 °C'de darbe ısıtma ile çıkış) | 10–70 °C |
+| Paket maliyeti | 412 → 234 USD/kWh (SE 50 → 25 USD/kg, verim %75 → %90) | < 180 USD/kWh |
 | Li / Co / Ni | 0 / 0 / 0 | 0 / 0 / 0 |
 | Bor içeriği | ~%19 hücre kütlesi | ~%13 |
 

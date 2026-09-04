@@ -155,12 +155,12 @@ NVP = Elektrot(
     ad="Na3V2(PO4)3 (NASICON, NVP)",
     formul=_nvp_formul,
     yogunluk=3.17,
-    maliyet_usd_kg=22.0,
-    maliyet_varsayim="V2O5 ~12 USD/kg × 0.40 kg/kg + sol-jel/karbon kaplama; aralık 18-30",
+    maliyet_usd_kg=24.0,
+    maliyet_varsayim="V2O5 ~12 USD/kg × 0.40 kg/kg + sol-jel/karbon kaplama + zorunlu NaNbO3/Na3PO4 ALD arayüz kaplaması (~2 USD/kg); aralık 20-32",
     kapasite_teorik=teorik_kapasite_mah_g(molar_kutle(_nvp_formul), 2),  # ≈117.6
     kapasite_pratik=110.0,
     potansiyel_ort=3.37,
-    notlar="Düz plato (V3+/V4+), yapısal olarak çok kararlı, düşük hacim değişimi (%8).",
+    notlar="Düz plato (V3+/V4+), yapısal olarak çok kararlı, düşük hacim değişimi (%8). Kurul P12: hidroborat SE ile 5-10 nm NaNbO3/Na3PO4 kaplama zorunlu.",
 )
 
 _nacro2_formul = {"Na": 1, "Cr": 1, "O": 2}

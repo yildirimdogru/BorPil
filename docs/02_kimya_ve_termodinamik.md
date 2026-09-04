@@ -65,7 +65,7 @@ sıradadır (`docs/06`).
     Anot:   Na⁺ + e⁻ ⇌ Na(s)                             E = 0 V, 1166 mAh/g
     Hücre:  ~3.37 V, aktif madde bazında 1/(1/110 + 1/1166) × 3.37 ≈ 339 Wh/kg (aktif)
 
-Hücre düzeyinde (folyo, elektrolit, kılıf dâhil) model **191 Wh/kg** verir (`hucre.py`).
+Hücre düzeyinde (folyo, elektrolit, kılıf dâhil) model hedef A için **203 Wh/kg**, ticari baz çizgisi A-alt için **177 Wh/kg** verir (`hucre.py`).
 
 ## 2.5 DBFC termodinamiği (menzil uzatıcı)
 

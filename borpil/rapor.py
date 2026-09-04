@@ -159,6 +159,33 @@ def grafik_ikosahedron(cikti: Path) -> Path:
     return yol
 
 
+def grafik_isitma_ve_sarj(cikti: Path, p: pk.PaketSonucu) -> Path:
+    plt = _plt()
+    fig, axes = plt.subplots(1, 2, figsize=(8.5, 3.8))
+    T = np.linspace(-20, 60, 41)
+    axes[0].plot(T, [sm.maks_sarj_gucu_kW(p, t) for t in T], label="Azami şarj/rejen gücü (CCD/1.5)")
+    axes[0].plot(T, [sm.maks_guc_kW(p, t) for t in T], label="10 s tepe deşarj gücü")
+    axes[0].plot(T, [sm.darbe_isitma_gucu_kW(p, t, 1.0) for t in T], "--", label="Darbe ısıtma gücü (1C rms)")
+    axes[0].axhline(p.gereksinim.hizli_sarj_kW, ls=":", c="k", lw=0.8)
+    axes[0].text(-18, p.gereksinim.hizli_sarj_kW * 1.05, f"Hızlı şarj hedefi {p.gereksinim.hizli_sarj_kW:.0f} kW", fontsize=7)
+    axes[0].set_xlabel("Paket sıcaklığı (°C)"); axes[0].set_ylabel("kW"); axes[0].set_ylim(0, 300)
+    axes[0].set_title("Güç haritaları — sıcaklık (BMS sınır haritası)"); axes[0].legend(fontsize=7); axes[0].grid(alpha=0.3)
+    T0s = [-20, -10, 0, 10, 25, 35, 45]
+    sureler = [sm.sarj_simulasyonu(p, T_baslangic_C=t).sure_dk for t in T0s]
+    isitici = [sm.sarj_simulasyonu(p, T_baslangic_C=t).isitici_kWh for t in T0s]
+    ax2 = axes[1]
+    ax2.bar(T0s, sureler, width=6, color="#5c6bc0", label="10→80 % süre (dk)")
+    ax2.set_xlabel("Paket başlangıç sıcaklığı (°C)"); ax2.set_ylabel("Şarj süresi (dk)")
+    ax3 = ax2.twinx(); ax3.plot(T0s, isitici, "o-", c="#ffb300", label="Isıtıcı enerjisi (kWh, şebekeden)")
+    ax3.set_ylabel("kWh")
+    ax2.set_title("DC hızlı şarj (150 kW cihaz, 20 kW şebeke ısıtıcı)")
+    h1, l1 = ax2.get_legend_handles_labels(); h2, l2 = ax3.get_legend_handles_labels()
+    ax2.legend(h1 + h2, l1 + l2, fontsize=7, loc="upper right"); ax2.grid(alpha=0.3)
+    yol = cikti / "isitma_ve_sarj.png"
+    fig.tight_layout(); fig.savefig(yol); plt.close(fig)
+    return yol
+
+
 # ---------------------------------------------------------------------------
 # Rapor
 # ---------------------------------------------------------------------------
@@ -169,26 +196,36 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
 
     g = pk.PaketGereksinimi()
     satirlar = ks.tablo(hc.VARYANTLAR, g)
-    hA = hc.hesapla(hc.BORPIL_A)
-    pA = pk.boyutlandir(hc.BORPIL_A, g)
-    surus_20 = sm.surus_simulasyonu(pA, T_ortam_C=20.0, isitici_hedef_C=35.0)
-    surus_20_isitmasiz = sm.surus_simulasyonu(pA, T_ortam_C=20.0, isitici_hedef_C=None)
-    surus_m10 = sm.surus_simulasyonu(pA, T_ortam_C=-10.0, isitici_hedef_C=35.0)
-    surus_m20_isitmasiz = sm.surus_simulasyonu(pA, T_ortam_C=-20.0, isitici_hedef_C=None)
-    surus_35 = sm.surus_simulasyonu(pA, T_ortam_C=35.0, isitici_hedef_C=35.0)
+    # Kurul P11: 1. nesil ticari baz çizgisi A-alt; A hedef/üst bant
+    pB = pk.boyutlandir(hc.BORPIL_A_ALT, g)   # baz
+    pA = pk.boyutlandir(hc.BORPIL_A, g)       # hedef
+    senaryolar = [
+        ("20 °C, ısıtıcı 35 °C + 0.8 kW atık ısı (strateji)", dict(T_ortam_C=20.0, isitici_hedef_C=35.0)),
+        ("20 °C, ısıtıcı kapalı", dict(T_ortam_C=20.0, isitici_hedef_C=None)),
+        ("−10 °C, ısıtıcı 35 °C (3 kW PTC + atık ısı)", dict(T_ortam_C=-10.0, isitici_hedef_C=35.0)),
+        ("−10 °C, şebekeden 35 °C'ye ön ısıtılmış", dict(T_ortam_C=-10.0, T_baslangic_C=35.0, isitici_hedef_C=35.0)),
+        ("−20 °C, ısıtıcı arızalı (stres)", dict(T_ortam_C=-20.0, isitici_hedef_C=None)),
+        ("35 °C", dict(T_ortam_C=35.0, isitici_hedef_C=35.0)),
+        ("40 °C, otoyol 130 km/h", dict(T_ortam_C=40.0, isitici_hedef_C=35.0, cevrim=sm.sabit_hiz_cevrimi(130))),
+    ]
+    surusler = {ad: (sm.surus_simulasyonu(pB, **kw), sm.surus_simulasyonu(pA, **kw)) for ad, kw in senaryolar}
+    sarjlar = {T0: (sm.sarj_simulasyonu(pB, T_baslangic_C=T0), sm.sarj_simulasyonu(pA, T_baslangic_C=T0)) for T0 in (45, 25, 0, -10)}
 
     yollar = {}
     if grafikler:
         yollar["iletkenlik"] = grafik_iletkenlik(cikti)
         yollar["enerji"] = grafik_enerji_yogunlugu(cikti, satirlar)
         yollar["duyarlilik"] = grafik_duyarlilik(cikti, hc.BORPIL_A)
-        yollar["guc"] = grafik_guc_ve_desarj(cikti, pA)
-        yollar["katman"] = grafik_katmanlar(cikti, pA.hucre)
+        yollar["guc"] = grafik_guc_ve_desarj(cikti, pB)
+        yollar["katman"] = grafik_katmanlar(cikti, pB.hucre)
         yollar["iko"] = grafik_ikosahedron(cikti)
+        yollar["isitma"] = grafik_isitma_ve_sarj(cikti, pB)
 
     md = []
     md.append("# BorPil — Hesaplanmış Tasarım Raporu (otomatik üretildi)\n")
-    md.append("Bu dosya `borpil rapor` komutuyla üretilir; tüm sayılar `borpil` paketindeki modellerden gelir.\n")
+    md.append("Bu dosya `borpil rapor` komutuyla üretilir; tüm sayılar `borpil` paketindeki modellerden gelir. "
+              "Kurul kararı (docs/07): 1. nesil ticari **baz çizgisi BorPil-A-alt**, **hedef/üst bant BorPil-A**; "
+              "her iki konfigürasyon yan yana raporlanır.\n")
 
     md.append("## 1. Teorik sınırlar (termodinamik)\n")
     md.append("| Kimya | Reaksiyon | E° (V) | Kapasite (mAh/g reaktan) | Wh/kg reaktan | Wh/kg ürün (O₂ dâhil) |\n|---|---|---:|---:|---:|---:|")
@@ -220,28 +257,79 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
     for anahtar, t in hc.VARYANTLAR.items():
         md.append("```\n" + hc.hesapla(t).ozet() + "\n```\n")
 
-    md.append("## 4. Paket (BorPil-A, 75 kWh, 400 V)\n")
-    md.append("```\n" + pA.ozet() + "\n```\n")
+    md.append("## 4. Paket (75 kWh, 120s3p, 3 bağımsız dizi, pouch-in-frame)\n")
+    md.append("### 4a. Baz çizgisi — BorPil-A-alt\n```\n" + pB.ozet() + "\n```\n")
+    md.append("### 4b. Hedef — BorPil-A\n```\n" + pA.ozet() + "\n```\n")
 
-    md.append("## 5. Sürüş simülasyonu (WLTP-benzeri sentetik çevrim, C-segment)\n")
-    md.append("| Senaryo | Menzil (km) | Tüketim (kWh/100 km) | Paket T başlangıç→bitiş (°C) | Min hücre gerilimi (V) | Ort. I²R ısı (W) | Isıtıcı (kWh) | Güç kısıtı (s) / açık (kWh) |\n|---|---:|---:|---:|---:|---:|---:|---:|")
-    for ad, s in (("20 °C, ısıtıcı hedef 35 °C (tasarım stratejisi)", surus_20),
-                  ("20 °C, ısıtıcı kapalı", surus_20_isitmasiz),
-                  ("−10 °C, ısıtıcı hedef 35 °C (6 kW)", surus_m10),
-                  ("−20 °C, ısıtıcı kapalı (stres senaryosu)", surus_m20_isitmasiz),
-                  ("35 °C", surus_35)):
-        md.append(f"| {ad} | {s.menzil_km:.0f} | {s.tuketim_kWh_100km:.1f} | {s.T_baslangic_C:.0f}→{s.T_bitis_C:.0f} | "
-                  f"{s.V_min_hucre:.2f} | {s.isi_uretimi_ort_W:.0f} | {s.isitici_kWh:.1f} | {s.guc_kisiti_s:.0f} / {s.guc_acigi_kWh:.2f} |")
+    md.append("## 5. Sürüş simülasyonu (WLTP-benzeri sentetik çevrim, C-segment) — baz / hedef\n")
+    md.append("Akım sınırları tüm modüllerde ortaktır (deşarj CCD×2, rejen CCD/1.5); güç kısıtında araç kalan güçle "
+              "ulaşabildiği hıza düşer, fazla rejen mekanik frene gider.\n")
+    md.append("| Senaryo | Menzil km (baz / hedef) | Tüketim kWh/100 km | Paket T (°C) | Isıtıcı kWh | Güç kısıtı s / açık kWh | Rejen kaybı kWh | Ort. hız km/h |\n|---|---:|---:|---:|---:|---:|---:|---:|")
+    for ad, (b, a) in surusler.items():
+        md.append(f"| {ad} | **{b.menzil_km:.0f}** / {a.menzil_km:.0f} | {b.tuketim_kWh_100km:.1f} / {a.tuketim_kWh_100km:.1f} | "
+                  f"{b.T_baslangic_C:.0f}→{b.T_bitis_C:.0f} (maks {b.T_maks_C:.0f}) | {b.isitici_kWh:.1f} | {b.guc_kisiti_s:.0f} / {b.guc_acigi_kWh:.1f} | "
+                  f"{b.rejen_kaybi_kWh:.1f} | {b.ort_hiz_kmh:.0f} |")
+    b20 = surusler[senaryolar[0][0]][0]
     md.append("")
-    md.append(f"Araç toplam kütlesi {surus_20.toplam_kutle_kg:.0f} kg (glider + yük + paket). Tüketim, bataryadan çekilen "
-              f"toplam enerjiyi (ısıtıcı dâhil, şarj kayıpları hariç) içerir; uç enerjisi ∫V·I dt = {surus_20.terminal_enerji_kWh:.1f} kWh "
-              f"(kullanılan {pA.kullanilabilir_enerji_kWh:.1f} kWh, fark I²R kaybı).\n")
+    md.append(f"Araç toplam kütlesi {b20.toplam_kutle_kg:.0f} kg (baz; glider + yük + paket). Tüketim bataryadan çekilen toplam enerjidir "
+              f"(ısıtıcı dâhil, şebeke şarj kayıpları hariç). −20 °C 'ısıtıcı arızalı' satırı: araç çevrimi izleyemez (güç kısıtı süresi ve "
+              f"açık büyük); menzil değeri düşük hızda sürüşe karşılık gelir ve operasyonel bir vaat değildir.\n")
 
-    md.append("## 6. Li-iyon ile karşılaştırma (75 kWh paket)\n")
+    md.append("## 6. DC hızlı şarj (10 → 80 % SOC, 150 kW cihaz, şebekeden 20 kW ısıtıcı) — baz / hedef\n")
+    md.append("| Paket başlangıç T | Süre dk | Ortalama / tepe güç kW | Isıtıcı kWh | I²R kWh | Bitiş T °C | Sınırlayıcı (süre kesri) |\n|---:|---:|---:|---:|---:|---:|---|")
+    for T0, (b, a) in sarjlar.items():
+        sinir = ", ".join(f"{k} %{v*100:.0f}" for k, v in b.sinir_dagilimi.items() if v > 0.005)
+        md.append(f"| {T0} °C | **{b.sure_dk:.0f}** / {a.sure_dk:.0f} | {b.ort_guc_kW:.0f} / {b.tepe_guc_kW:.0f} | {b.isitici_kWh:.1f} | "
+                  f"{b.kayip_I2R_kWh:.2f} | {b.T_bitis_C:.0f} | {sinir} |")
+    md.append("")
+    md.append(f"Hızlı şarj sıcaklık kapısı: {g.hizli_sarj_kW:.0f} kW için paket ≥ {pB.hizli_sarj_min_T_C:.0f} °C (CCD/1.5). "
+              "Soğuk pakette şarj süresi ısıtma gücüyle belirlenir; bu yüzden ısıtıcı DC şarj cihazından 20 kW ile beslenir.\n")
+
+    md.append("## 7. Isıtma seçenekleri (−10 °C → 45 °C ön ısıtma; kurul P5/P6)\n")
+    md.append("| Yöntem | Süre dk | Enerji kWh | Not |\n|---|---:|---:|---|")
+    for ad, kw in (("PTC 3 kW (park, paketten)", dict(ptc_kW=3)), ("PTC 6 kW", dict(ptc_kW=6)),
+                   ("Şebekeden 20 kW (DC şarj istasyonu)", dict(ptc_kW=20)),
+                   ("Darbe (AC) ısıtma 1C rms, tek başına", dict(darbe_c_orani=1.0)),
+                   ("Darbe 1C + PTC 3 kW", dict(ptc_kW=3, darbe_c_orani=1.0))):
+        sure, E = sm.on_isitma_suresi_dk(pB, -10, 45, **kw)
+        md.append(f"| {ad} | {sure:.0f} | {E:.1f} | |")
+    sure0, E0 = sm.on_isitma_suresi_dk(pB, -20, 0, darbe_c_orani=1.0)
+    md.append("")
+    md.append(f"Darbe ısıtma −20 °C'de {sm.darbe_isitma_gucu_kW(pB, -20, 1.0):.0f} kW, 0 °C'de {sm.darbe_isitma_gucu_kW(pB, 0, 1.0):.0f} kW, "
+              f"25 °C'de {sm.darbe_isitma_gucu_kW(pB, 25, 1.0):.1f} kW üretir (direnç ısındıkça düşer → kendini sınırlar): "
+              f"−20 → 0 °C **{sure0:.0f} dk / {E0:.1f} kWh**. Sonuç: darbe ısıtma derin soğuktan çıkış aracı, tam ön ısıtma için "
+              "şebeke gücü veya atık ısı gerekir. Na/kloso-borat arayüzünün kHz AC dayanımı deneysel doğrulama planındadır.\n")
+
+    md.append("## 8. Elektrik mimarisi ve güvenlik kontrolleri (baz paket)\n")
+    md.append(f"- Gerilim penceresi {pB.V_min_paket:.0f}–{pB.V_maks_paket:.0f} V (invertör DC-link tavanı {g.invertor_dc_link_maks_V:.0f} V, "
+              f"şarj cihazı {g.sarj_cihazi_maks_V:.0f} V sınıfı); tepe akım {pB.tepe_akim_paket_A:.0f} A; tab sürekli {pB.tab_akim_yogunlugu_surekli_A_mm2:.1f} A/mm².")
+    md.append(f"- Beklenen kısa devre akımı: 45 °C'de {pB.kisa_devre_akimi_45C_kA:.1f} kA, −10 °C'de {pB.kisa_devre_akimi_m10C_A:.0f} A "
+              f"(sürekli akımın 2 katından düşük → sigorta soğukta ayırt edemez; akım-plausibilite + dI/dt ile kontaktör açma).")
+    md.append(f"- Isıtıcı takılı kalma: +{pB.isitici_takili_isinma_K_per_h:.0f} K/h, 35 °C'den Na erimesine {pB.isitici_takili_na_erime_dk:.0f} dk "
+              f"(3 kW PTC ile); bağımsız donanım kesici {g.isitici_donanim_kesici_C:.0f} °C + ayrı ısıtıcı kontaktörü + çift NTC (ASIL D → B(D)+B(D)).")
+    md.append(f"- {pB.paralel} bağımsız {pB.seri}s dizi: dizi akım dengesizliği = Na dendrit yumuşak kısa devre dedektörü; 2/3 güçle hata toleransı.")
+    for u in pB.uyarilar:
+        md.append(f"- ! {u}")
+    md.append("")
+
+    md.append("## 9. Maliyet (gen-1 gerçekçi model: imalat ×1.75, ilk geçiş verimi %75, paket +32 USD/kWh)\n")
+    md.append("| SE fiyatı USD/kg | Verim | Baz (A-alt) paket USD/kWh | Hedef (A) paket USD/kWh |\n|---:|---:|---:|---:|")
+    for fiyat, verim in ((50, 0.75), (50, 0.90), (25, 0.90), (15, 0.95)):
+        satir = []
+        for t in (hc.BORPIL_A_ALT, hc.BORPIL_A):
+            se = dataclasses.replace(t.elektrolit, maliyet_usd_kg=fiyat)
+            gg = dataclasses.replace(g, ilk_gecis_verimi=verim, imalat_carpani=1.75 if verim < 0.9 else 1.55)
+            satir.append(pk.boyutlandir(dataclasses.replace(t, elektrolit=se), gg).maliyet_usd_kWh)
+        md.append(f"| {fiyat} | %{verim*100:.0f} | {satir[0]:.0f} | {satir[1]:.0f} |")
+    md.append("")
+    md.append("Ekonomik hedef bandı (165–200 USD/kWh) için SE ≤ 25 USD/kg **ve** verim ≥ %90 **ve** imalat çarpanı ≤ 1.55 (10 GWh ölçeği) gerekir; "
+              "120 USD/kWh mevcut malzeme karmasıyla ulaşılabilir değildir (SE ≤ 15 USD/kg + kompozitte SE %18 + A-Fe katot gen-2).\n")
+
+    md.append("## 10. Li-iyon ile karşılaştırma (75 kWh paket)\n")
     md.append(ks.markdown_tablo(satirlar, g.brut_enerji_kWh))
 
     if grafikler:
-        md.append("## 7. Grafikler\n")
+        md.append("## 11. Grafikler\n")
         for ad, yol in yollar.items():
             md.append(f"![{ad}]({yol.name})\n")
 

@@ -58,9 +58,40 @@ def v_min_hucre(h: HucreSonucu, oran: float = 0.70) -> float:
     return oran * h.gerilim_V
 
 
+DESARJ_TOLERANSI = 2.0       # Na soyulma yönünde CCD'ye göre esneklik (kaplamadan daha az kritik)
+SARJ_GUVENLIK_KATSAYISI = 1.5  # Na kaplama (şarj/rejen) yönünde güvenlik katsayısı (EE incelemesi: 1.5)
+J_TAVAN_MA_CM2 = 12.0        # kompozit katot difüzyon/ısıl tavanı (~4C)
+
+
+def akim_siniri_A(h: HucreSonucu, T_C: float, yon: str = "desarj",
+                  j_kritik_25C_mA_cm2: float | None = None) -> float:
+    """
+    Hücre başına izin verilen azami akım (A) — TÜM modüllerin (tepe güç, sürüş, rejen, şarj) ortak sınırı.
+      yon="desarj": CCD(T) × DESARJ_TOLERANSI, J_TAVAN ile kırpılmış
+      yon="sarj"  : CCD(T) / SARJ_GUVENLIK_KATSAYISI  (rejen de bu yöndedir)
+    """
+    j = (kritik_akim_yogunlugu_mA_cm2(T_C) if j_kritik_25C_mA_cm2 is None
+         else kritik_akim_yogunlugu_mA_cm2(T_C, J_ref=j_kritik_25C_mA_cm2))
+    if yon == "desarj":
+        j = min(j * DESARJ_TOLERANSI, J_TAVAN_MA_CM2)
+    elif yon == "sarj":
+        j = j / SARJ_GUVENLIK_KATSAYISI
+    else:
+        raise ValueError("yon 'desarj' veya 'sarj' olmalı")
+    return j * h.elektrot_alani_cm2 / 1e3
+
+
+def maks_sarj_gucu_kW(p: PaketSonucu, T_C: float, soc: float = 0.5) -> float:
+    """CCD/güvenlik katsayısı ile sınırlı azami şarj (veya rejen) gücü (kW)."""
+    I = akim_siniri_A(p.hucre, T_C, "sarj")
+    U = float(ocv(soc, p.hucre.gerilim_V))
+    R = hucre_direnci_ohm(p.hucre, T_C)
+    return (U + I * R) * I * p.hucre_sayisi / 1e3
+
+
 def maks_guc_kW(p: PaketSonucu, T_C: float, soc: float = 0.5, V_min_hucre: float | None = None,
-                j_kritik_25C_mA_cm2: float | None = None, desarj_toleransi: float = 2.0,
-                j_tavan_mA_cm2: float = 12.0) -> float:
+                j_kritik_25C_mA_cm2: float | None = None, desarj_toleransi: float = DESARJ_TOLERANSI,
+                j_tavan_mA_cm2: float = J_TAVAN_MA_CM2) -> float:
     """
     Verilen sıcaklık ve SOC'de 10 s tepe deşarj gücü. Üç sınırın en küçüğü alınır:
       (1) omik sınır: hücre gerilimi V_min'e düşmeden çekilebilecek akım, P = V_min·(OCV − V_min)/R;
@@ -135,6 +166,24 @@ def wltp_benzeri_cevrim(dt: float = 1.0) -> tuple[np.ndarray, np.ndarray]:
     return t, v
 
 
+def sabit_hiz_cevrimi(hiz_kmh: float = 130.0, sure_s: float = 1800.0, dt: float = 1.0) -> tuple[np.ndarray, np.ndarray]:
+    """Otoyol senaryosu: sabit hız (kısa rampa ile)."""
+    t = np.arange(0, sure_s, dt)
+    v = np.minimum(t / 30.0, 1.0) * hiz_kmh / 3.6
+    return t, v
+
+
+def _hiz_gucten(arac: Arac, toplam_kutle: float, P_teker_W: float) -> float:
+    """Sabit hızda a·v³ + b·v = P denkleminin pozitif kökü (m/s)."""
+    if P_teker_W <= 0:
+        return 0.0
+    a = 0.5 * arac.hava_yogunlugu * arac.Cd * arac.alan_m2
+    b = arac.Crr * toplam_kutle * arac.g
+    kokler = np.roots([a, 0.0, b, -P_teker_W])
+    gercek = [k.real for k in kokler if abs(k.imag) < 1e-9 and k.real > 0]
+    return max(gercek) if gercek else 0.0
+
+
 def tekerlek_gucu_W(arac: Arac, toplam_kutle: float, v: np.ndarray, a: np.ndarray) -> np.ndarray:
     F = (0.5 * arac.hava_yogunlugu * arac.Cd * arac.alan_m2 * v**2
          + arac.Crr * toplam_kutle * arac.g
@@ -155,21 +204,34 @@ class SurusSonucu:
     guc_kisiti_s: float = 0.0         # güç talebinin karşılanamadığı toplam süre
     guc_acigi_kWh: float = 0.0        # karşılanamayan enerji (talep − sağlanan)
     terminal_enerji_kWh: float = 0.0  # ∫ V·I dt (uç enerjisi)
+    rejen_kaybi_kWh: float = 0.0      # CCD sınırı nedeniyle mekanik frene giden rejen enerjisi
+    sogutma_kWh: float = 0.0          # sıvı plakanın attığı ısı
+    T_maks_C: float = 0.0
+    sure_h: float = 0.0               # toplam sürüş süresi
+    ort_hiz_kmh: float = 0.0          # güç kısıtı nedeniyle düşen ortalama hız (çevrim nominal 48 km/h)
 
 
 def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20.0,
                       T_baslangic_C: float | None = None, isitici_hedef_C: float | None = 35.0,
-                      isitici_guc_kW: float = 6.0, soc_bitis: float | None = None) -> SurusSonucu:
+                      isitici_guc_kW: float = 3.0, soc_bitis: float | None = None,
+                      atik_isi_kW: float = 0.8, sogutma_hedef_C: float = 60.0,
+                      sogutma_guc_W_per_K: float = 200.0, sogutma_maks_kW: float = 3.0,
+                      cevrim: tuple[np.ndarray, np.ndarray] | None = None) -> SurusSonucu:
     """
-    Çevrimi SOC bitene kadar tekrarlayarak menzil hesaplar. Isıl model: m·c·dT/dt = I²R + P_ısıtıcı − UA·(T−T_ortam).
-    Isıtıcı: hücre sıcaklığı hedefin altındaysa (bataryadan beslenerek) çalışır — "sıcak batarya" stratejisi.
+    Çevrimi SOC bitene kadar tekrarlayarak menzil hesaplar.
+    Isıl model: m·c·dT/dt = I²R + P_ısıtıcı + P_atık − P_soğutma − UA·(T−T_ortam).
+      - Isıtıcı: hücre sıcaklığı hedefin altındaysa (bataryadan beslenerek) çalışır — "sıcak batarya" stratejisi.
+      - atik_isi_kW: tahrik (invertör+motor) atık ısısının soğutucu devresiyle pakete aktarılan kısmı (sürüşte).
+      - Soğutma: T > sogutma_hedef_C ise sıvı plaka, orantılı (W/K).
+    Akım sınırları `akim_siniri_A` ile ortaktır: deşarjda CCD×tolerans ve kesim gerilimi, rejende CCD/SF
+    (aşan rejen mekanik frene gider ve `rejen_kaybi_kWh` olarak kaydedilir).
     SOC bitişi paketin kullanılabilir SOC penceresinden alınır (varsayılan %92 → soc_bitis 0.08).
-    Güç talebi omik/gerilim sınırını aşarsa akım kırpılır, açık kaydedilir ve o adımdaki mesafe
-    sağlanan/talep edilen güç oranıyla ölçeklenir (araç yavaşlar).
+    Güç talebi sınırı aşarsa akım kırpılır, açık kaydedilir ve o adımdaki mesafe sağlanan/talep edilen
+    güç oranıyla ölçeklenir (araç yavaşlar).
     """
     if soc_bitis is None:
         soc_bitis = 1.0 - p.gereksinim.kullanilabilir_soc_penceresi
-    t, v = wltp_benzeri_cevrim()
+    t, v = wltp_benzeri_cevrim() if cevrim is None else cevrim
     dt = float(t[1] - t[0])
     a = np.gradient(v, dt)
     toplam_kutle = arac.glider_kutle_kg + arac.yuk_kg + p.paket_kutle_kg
@@ -190,6 +252,9 @@ def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20
     kisit_s = 0.0
     acik_J = 0.0
     terminal_J = 0.0
+    rejen_kayip_J = 0.0
+    sogutma_J = 0.0
+    T_maks = T
     sure_s = 0.0
     kapasite_As = p.hucre.hucre_kapasite_Ah * 3600.0
     bitti = False
@@ -197,22 +262,43 @@ def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20
     while not bitti and sure_s < 200 * t[-1]:
         for i in range(len(v)):
             P_bat = P_bat_cevrim[i]
+            surus_var = v[i] > 0.5
             P_isitici = isitici_guc_kW * 1e3 if (isitici_hedef_C is not None and T < isitici_hedef_C) else 0.0
+            # tahrik atık ısısı: termostatik vana — paket hedefin 5 K üstüne çıkınca devre dışı
+            atik_izin = T < (isitici_hedef_C if isitici_hedef_C is not None else 35.0) + 5.0
+            P_atik = atik_isi_kW * 1e3 if (surus_var and atik_izin) else 0.0
+            P_sogutma = min(sogutma_guc_W_per_K * (T - sogutma_hedef_C), sogutma_maks_kW * 1e3) if T > sogutma_hedef_C else 0.0
             R_h = hucre_direnci_ohm(p.hucre, T)
             U = float(ocv(soc, p.hucre.gerilim_V))
             P_h = (P_bat + P_isitici) / n            # hücre başına güç (seri-paralel simetrik)
             # V·I = P_h, V = U − I·R  →  R·I² − U·I + P_h = 0  (küçük kök = kararlı çözüm)
             disc = U * U - 4 * R_h * P_h
-            I_maks = (U - V_kesim) / R_h              # kesim gerilimine izin veren azami deşarj akımı
-            if P_h > 0 and (disc < 0 or (U - np.sqrt(disc)) / (2 * R_h) > I_maks):
-                I_h = I_maks                          # güç kısıtı: kesim geriliminde çalış
-                P_saglanan = V_kesim * I_h
-                acik_J += (P_h - P_saglanan) * n * dt
-                kisit_s += dt
-                mesafe_orani = max(0.0, (P_saglanan * n - P_isitici) / max(P_bat, 1.0))
+            mesafe_orani = 1.0
+            if P_h > 0:
+                # deşarj: kesim gerilimi VE kritik akım (soyulma) sınırlarının küçüğü
+                I_maks = min((U - V_kesim) / R_h, akim_siniri_A(p.hucre, T, "desarj"))
+                I_istek = U / (2 * R_h) if disc < 0 else (U - np.sqrt(disc)) / (2 * R_h)
+                if disc < 0 or I_istek > I_maks:
+                    I_h = I_maks
+                    P_saglanan = (U - I_h * R_h) * I_h
+                    acik_J += (P_h - P_saglanan) * n * dt
+                    kisit_s += dt
+                    # Araç, kalan güçle ulaşabildiği hıza düşer (sabit hız, ivme yok):
+                    # P_teker = a·v³ + b·v  →  gerçek pozitif kök
+                    P_teker_saglanan = max(0.0, (P_saglanan * n - P_isitici - arac.yardimci_guc_W) * arac.eta_tahrik)
+                    v_erisilen = _hiz_gucten(arac, toplam_kutle, P_teker_saglanan)
+                    mesafe_orani = min(1.0, v_erisilen / v[i]) if v[i] > 0 else 1.0
+                else:
+                    I_h = I_istek
             else:
-                I_h = (U - np.sqrt(disc)) / (2 * R_h)
-                mesafe_orani = 1.0
+                # rejen (şarj yönü): CCD/SF ile sınırlı; fazlası mekanik frene
+                I_istek = (U - np.sqrt(disc)) / (2 * R_h)      # negatif
+                I_rejen_maks = akim_siniri_A(p.hucre, T, "sarj")
+                if -I_istek > I_rejen_maks:
+                    I_h = -I_rejen_maks
+                    rejen_kayip_J += (-P_h - (U - I_h * R_h) * (-I_h)) * n * dt
+                else:
+                    I_h = I_istek
             V_h = U - I_h * R_h
             if P_h > 0:
                 V_min = min(V_min, V_h)
@@ -220,8 +306,10 @@ def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20
             Q = I_h**2 * R_h * n
             q_toplam_J += Q * dt
             isitici_J += P_isitici * dt
+            sogutma_J += P_sogutma * dt
             terminal_J += V_h * I_h * n * dt
-            T += (Q + P_isitici - UA * (T - T_ortam_C)) * dt / C_isil
+            T += (Q + P_isitici + P_atik - P_sogutma - UA * (T - T_ortam_C)) * dt / C_isil
+            T_maks = max(T_maks, T)
             mesafe_km += v[i] * dt / 1e3 * min(1.0, mesafe_orani)
             sure_s += dt
             if soc <= soc_bitis:
@@ -241,6 +329,11 @@ def surus_simulasyonu(p: PaketSonucu, arac: Arac = Arac(), T_ortam_C: float = 20
         guc_kisiti_s=kisit_s,
         guc_acigi_kWh=acik_J / 3.6e6,
         terminal_enerji_kWh=terminal_J / 3.6e6,
+        rejen_kaybi_kWh=rejen_kayip_J / 3.6e6,
+        sogutma_kWh=sogutma_J / 3.6e6,
+        T_maks_C=T_maks,
+        sure_h=sure_s / 3600.0,
+        ort_hiz_kmh=mesafe_km / max(sure_s / 3600.0, 1e-9),
     )
 
 
@@ -253,3 +346,143 @@ def sabit_akim_desarj(h: HucreSonucu, c_orani: float, T_C: float, n_nokta: int =
     Ah = (1 - soc) * h.hucre_kapasite_Ah
     gecerli = V > 0.6 * h.gerilim_V
     return Ah[gecerli], V[gecerli]
+
+
+# ---------------------------------------------------------------------------
+# Şarj simülasyonu (sıcaklık kapılı, kritik akım yoğunluğu sınırlı)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SarjSonucu:
+    sure_dk: float                    # SOC_baslangic → SOC_hedef süresi
+    enerji_sebeke_kWh: float          # şarj cihazından çekilen (ısıtıcı dâhil)
+    enerji_hucre_kWh: float           # hücrelere depolanan (E·ΔSOC)
+    isitici_kWh: float
+    kayip_I2R_kWh: float
+    T_baslangic_C: float
+    T_bitis_C: float
+    ort_guc_kW: float
+    tepe_guc_kW: float
+    sinir_dagilimi: dict[str, float]  # süre kesri: 'ccd' | 'sarj_cihazi' | 'gerilim' | 'on_isitma'
+    v_maks_hucre: float
+
+
+def sarj_simulasyonu(p: PaketSonucu, T_ortam_C: float = 20.0, T_baslangic_C: float | None = None,
+                     soc_baslangic: float = 0.10, soc_hedef: float = 0.80,
+                     sarj_cihazi_kW: float = 150.0, sarj_cihazi_maks_A: float = 500.0,
+                     V_maks_hucre: float | None = None, T_sarj_min_C: float = 15.0,
+                     isitici_hedef_C: float = 45.0, isitici_guc_kW: float = 20.0,
+                     sogutma_hedef_C: float = 60.0,
+                     sogutma_guc_W_per_K: float = 200.0, sogutma_maks_kW: float = 3.0, dt: float = 5.0) -> SarjSonucu:
+    """
+    DC hızlı şarj: her adımda akım = min( kritik akım yoğunluğu(T)·marj·alan,  şarj cihazı gücü / V_paket,
+    şarj cihazı akım sınırı,  V_maks'a ulaşmadan izin verilen akım ).  Paket T_sarj_min'in altındaysa
+    önce ısıtıcı (şebekeden beslenir) çalışır; şarj sırasında da hedef sıcaklığa kadar ısıtır.
+    60 °C üstünde sıvı plaka soğutması (≤ 3 kW) devreye girer. Isıtıcı DC şarj cihazından beslenir (20 kW;
+    kurul kararı: şarj istasyonunda yüksek güçlü şebeke ısıtması, −10 °C seansını 95 → ~53 dk'ya indirir).
+    Na kaplama (şarj) yönü kritik olduğu için
+    akım sınırı `akim_siniri_A(…, "sarj")` = CCD/SARJ_GUVENLIK_KATSAYISI'dır (deşarjdaki 2× tolerans yok).
+    Isıtıcı şebekeden beslenir (paket enerjisi harcanmaz).
+    """
+    if V_maks_hucre is None:
+        V_maks_hucre = p.hucre.gerilim_V + 0.40
+    h = p.hucre
+    n, seri, paralel = p.hucre_sayisi, p.seri, p.paralel
+    T = T_ortam_C if T_baslangic_C is None else T_baslangic_C
+    C_isil = p.paket_kutle_kg * p.gereksinim.paket_isi_kapasitesi_kJ_kgK * 1e3
+    UA = p.isi_kaybi_W_per_K
+    kapasite_As = h.hucre_kapasite_Ah * 3600.0
+    soc = soc_baslangic
+    sure = 0.0
+    sebeke_J = isitici_J = kayip_J = 0.0
+    tepe_W = 0.0
+    sinir = {"ccd": 0.0, "sarj_cihazi": 0.0, "gerilim": 0.0, "on_isitma": 0.0}
+    v_maks_gorulen = 0.0
+    T0 = T
+
+    while soc < soc_hedef and sure < 6 * 3600:
+        R_h = hucre_direnci_ohm(h, T)
+        U = float(ocv(soc, h.gerilim_V))
+        P_isitici = isitici_guc_kW * 1e3 if T < isitici_hedef_C else 0.0
+        if T < T_sarj_min_C:
+            I_h = 0.0
+            etiket = "on_isitma"
+        else:
+            I_ccd = akim_siniri_A(h, T, "sarj")
+            V_paket = seri * U
+            I_cihaz = min(sarj_cihazi_kW * 1e3 / V_paket, sarj_cihazi_maks_A) / paralel
+            I_gerilim = max(0.0, (V_maks_hucre - U) / R_h)
+            I_h, etiket = min((I_ccd, "ccd"), (I_cihaz, "sarj_cihazi"), (I_gerilim, "gerilim"), key=lambda x: x[0])
+        V_h = U + I_h * R_h
+        v_maks_gorulen = max(v_maks_gorulen, V_h)
+        P_sarj = V_h * I_h * n
+        tepe_W = max(tepe_W, P_sarj)
+        sinir[etiket] += dt
+        soc += I_h * dt / kapasite_As
+        Q = I_h**2 * R_h * n
+        P_sogutma = min(sogutma_guc_W_per_K * (T - sogutma_hedef_C), sogutma_maks_kW * 1e3) if T > sogutma_hedef_C else 0.0
+        T += (Q + P_isitici - P_sogutma - UA * (T - T_ortam_C)) * dt / C_isil
+        kayip_J += Q * dt
+        isitici_J += P_isitici * dt
+        sebeke_J += (P_sarj + P_isitici) * dt
+        sure += dt
+
+    depolanan_kWh = p.gercek_enerji_kWh * (soc - soc_baslangic)
+    toplam = max(sure, 1.0)
+    return SarjSonucu(
+        sure_dk=sure / 60.0,
+        enerji_sebeke_kWh=sebeke_J / 3.6e6,
+        enerji_hucre_kWh=depolanan_kWh,
+        isitici_kWh=isitici_J / 3.6e6,
+        kayip_I2R_kWh=kayip_J / 3.6e6,
+        T_baslangic_C=T0, T_bitis_C=T,
+        ort_guc_kW=sebeke_J / toplam / 1e3,
+        tepe_guc_kW=tepe_W / 1e3,
+        sinir_dagilimi={k: v / toplam for k, v in sinir.items()},
+        v_maks_hucre=v_maks_gorulen,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Darbe / AC kendinden ısıtma (invertör + motor sargısı üzerinden, kHz)
+# ---------------------------------------------------------------------------
+
+def darbe_isitma_gucu_kW(p: PaketSonucu, T_C: float, c_orani_rms: float = 1.0,
+                         bulk_kesri: float | None = None) -> float:
+    """
+    kHz frekansta çift yönlü akımla hücrenin kendi direnci üzerinden ısınma gücü: P = I_rms²·R_bulk(T)·n.
+    Yüksek frekansta arayüz (R_ct‖C_dl) kısa devre olur; akım yalnız 'bulk' iyonik dirençten
+    (ayırıcı + kompozit) geçer → R_bulk = ASR_toplam − ASR_arayüz(T). Yarım periyot yükü çift tabaka
+    yükünün çok altında kaldığı için net Na kaplaması beklenmez (EIS ile doğrulanacak — bkz. docs/06).
+    bulk_kesri verilirse R_bulk = bulk_kesri × R_toplam alınır.
+    """
+    h = p.hucre
+    R_toplam = hucre_direnci_ohm(h, T_C)
+    if bulk_kesri is None:
+        t = h.tasarim
+        asr_arayuz = t.arayuz_direnci_ohm_cm2 / float(arrhenius(1.0, EA_ARAYUZ_EV, T_C + C_TO_K,
+                                                                  t.calisma_sicakligi_C + C_TO_K))
+        R_bulk = max(R_toplam - asr_arayuz / h.elektrot_alani_cm2, 0.0)
+    else:
+        R_bulk = bulk_kesri * R_toplam
+    I_rms = c_orani_rms * h.hucre_kapasite_Ah
+    return I_rms**2 * R_bulk * p.hucre_sayisi / 1e3
+
+
+def on_isitma_suresi_dk(p: PaketSonucu, T_baslangic_C: float, T_hedef_C: float, T_ortam_C: float | None = None,
+                        ptc_kW: float = 0.0, darbe_c_orani: float = 0.0, dt: float = 10.0) -> tuple[float, float]:
+    """PTC ve/veya darbe ısıtma ile T_hedef'e ulaşma süresi (dk) ve harcanan enerji (kWh, paketten)."""
+    T = T_baslangic_C
+    Ta = T_baslangic_C if T_ortam_C is None else T_ortam_C
+    C = p.paket_kutle_kg * p.gereksinim.paket_isi_kapasitesi_kJ_kgK * 1e3
+    UA = p.isi_kaybi_W_per_K
+    t = 0.0
+    E_J = 0.0
+    while T < T_hedef_C and t < 6 * 3600:
+        P_darbe = darbe_isitma_gucu_kW(p, T, darbe_c_orani) * 1e3 if darbe_c_orani > 0 else 0.0
+        P = ptc_kW * 1e3 + P_darbe
+        T += (P - UA * (T - Ta)) * dt / C
+        # darbe ısıtmada invertör/motor kaybı ~%10 ek; PTC %100
+        E_J += (ptc_kW * 1e3 + P_darbe * 1.10) * dt
+        t += dt
+    return t / 60.0, E_J / 3.6e6
