@@ -11,10 +11,10 @@ koda bağlıdır; kod değişirse rapor değişir.
 |---|---|---|---|
 | **A1 — Elektrokimyacı** | Kimya | Reaksiyonlar, Gibbs enerjileri, hücre potansiyelleri, kararlılık pencereleri, elektrolit kimyası | `termodinamik.py`, `malzemeler.py`, `docs/02` |
 | **A2 — Katı hâl fizikçisi** | Fizik | İyon taşınımı (Arrhenius, faz geçişleri), arayüz direnci, kritik akım yoğunluğu, ısıl model | `elektrolit.py`, `simulasyon.py` |
-| **A3 — Malzeme bilimci** | Malzeme bilimi | Sentez rotaları, folyo/kompozit reçeteleri, üretim prosesi, tedarik zinciri (Türkiye boru) | `hucre.py` reçeteler, `docs/03` |
+| **A3 — Malzeme bilimci** | Malzeme bilimi | Sentez rotaları, folyo/kompozit reçeteleri, üretim prosesi, tedarik zinciri (Türkiye boru), maden bütçesi | `hucre.py` reçeteler, `docs/03`, `docs/08` |
 | **A4 — Matematikçi / geometrici** | Matematik, geometri | [B12H12]²⁻ ikosahedronu, kafes boşluk analizi, paketleme geometrisi, sayısal çözümler | `geometri.py`, `simulasyon.py` çözücü |
 | **A5 — Biyolog / toksikolog** | Biyoloji, çevre | Bor, sodyum, vanadyum toksikolojisi; hidrojen salımı; yaşam döngüsü ve geri dönüşüm | `docs/05` |
-| **A6 — Sistem mühendisi** | Otomotiv | Paket mimarisi, gerilim, güç, ısıl yönetim, sürüş çevrimi, maliyet | `paket.py`, `karsilastirma.py`, `docs/04` |
+| **A6 — Sistem mühendisi** | Otomotiv | Paket mimarisi, gerilim, güç, ısıl yönetim, sürüş çevrimi, maliyet; ürün formu belgeler | `paket.py`, `karsilastirma.py`, `docs/04`, `docs/08`, `docs/urun/` |
 | **H1, H2 — Bağımsız hakemler (1. tur)** | Kimya/fizik; sayısal model | Kör inceleme: sabitler, literatür uyumu, birim hataları | `docs/06 §6.3` |
 | **H3, H4 — Bağımsız uzmanlar (2. tur)** | Elektrik-elektronik; EV batarya üretimi | Mimari, BMS, ısıl-elektrik, güvenlik; format, proses, verim, maliyet, nitelendirme | `docs/07` |
 | **Kurul (5 üye)** | Tüm disiplinler | H3/H4 önerilerini oylar, ödünleşimleri karara bağlar | `docs/07 §7.3` |
@@ -56,3 +56,9 @@ koda bağlıdır; kod değişirse rapor değişir.
 | K9 | **A-alt 1. nesil ticari baz çizgisi**, A hedef (kurul P11) | 30 µm serbest film ve 20 µm Na folyo bugün endüstriyel değil; üretilebilirlik > enerji yoğunluğu. |
 | K10 | 120s3p, **3 bağımsız dizi**, pouch-in-frame, 80 °C ısıtıcı kesici, 20 kW şebeke ısıtıcı, 0.8 kW atık ısı, parkta ısıtma yok (kurul P4–P10, P19) | Elektrik-elektronik ve üretici incelemeleri; güvenlik oyları baskın. |
 | K11 | Maliyet modeli gen-1 gerçekçi: ×1.75, verim %75, +32 USD/kWh (kurul P13) | Şeffaflık; 120 USD/kWh iddiasından vazgeçildi, hedef bandı 165–200. |
+
+## Ürün formu belgeler
+
+Tasarım satışa hazır bir SKU olsaydı OEM ve pazara verilecek set `docs/urun/` altındadır
+(EV-74 veri formu, entegrasyon, güvenlik/garanti, broşür). Maden/element bütçesi
+`docs/08`. Sayılar `borpil` modeline bağlı kalır; sertifika numaraları şablondur.

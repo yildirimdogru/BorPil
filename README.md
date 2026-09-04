@@ -108,6 +108,8 @@ docs/              tasarım dokümanları (Türkçe)
   05_guvenlik_cevre_saglik.md     güvenlik (Na, ısıtıcı, kısa devre), toksikoloji, yaşam döngüsü
   06_riskler_trl_yol_haritasi.md  TRL, risk kaydı, 1. tur hakem bulguları, doğrulama planı, KPI
   07_ee_uretim_incelemesi_ve_kurul.md  elektrik-elektronik ve üretici incelemeleri, kurul kararları (P1–P20)
+  08_paket_maden_ve_element_butcesi.md paket maden/element oranları (B, Na, V, P, Al; Li/Co/Ni/Cu = 0)
+  urun/                                satışa-hazır ürün formu: veri formu, entegrasyon, güvenlik/garanti, broşür
 cikti/             otomatik üretilen rapor (RAPOR.md) ve grafikler
 tests/             birim testleri (45)
 ```
@@ -130,7 +132,8 @@ Tüm sayısal iddialar koddan üretilir; varsayımlar (özellikle maliyetler) ve
 açıkça işaretlenmiştir (`maliyet_varsayim`). Ayrıntılar: `docs/02` (kimya), `docs/03`
 (malzeme/üretim), `docs/04` (hücre/paket), `docs/05` (güvenlik/çevre), `docs/06` (riskler, hakem
 bulguları, yol haritası), `docs/07` (elektrik-elektronik/üretici incelemeleri ve kurul kararları),
-`cikti/RAPOR.md` (sayılar).
+`docs/08` (paket maden ve element bütçesi), `docs/urun/` (EV-74 teknik veri formu, entegrasyon,
+güvenlik/garanti, tanıtım broşürü), `cikti/RAPOR.md` (sayılar).
 
 ---
 
@@ -244,6 +247,8 @@ docs/              design documents (Turkish)
   05_guvenlik_cevre_saglik.md     safety (Na, heater, short circuit), toxicology, life cycle
   06_riskler_trl_yol_haritasi.md  TRL, risk register, round-1 review findings, validation plan, KPIs
   07_ee_uretim_incelemesi_ve_kurul.md  electrical-engineering and manufacturer reviews, council decisions (P1–P20)
+  08_paket_maden_ve_element_butcesi.md pack mineral/element budget (B, Na, V, P, Al; Li/Co/Ni/Cu = 0)
+  urun/                                product-form set: datasheet, integration, safety/warranty, brochure
 cikti/             auto-generated report (RAPOR.md) and figures
 tests/             unit tests (45)
 ```
@@ -266,4 +271,5 @@ All numerical claims are produced by the code; assumptions (especially costs) ar
 marked in the data classes (`maliyet_varsayim`). Details: `docs/02` (chemistry), `docs/03`
 (materials/manufacturing), `docs/04` (cell/pack), `docs/05` (safety/environment), `docs/06`
 (risks, review findings, roadmap), `docs/07` (electrical/manufacturing reviews and council
-decisions), `cikti/RAPOR.md` (numbers).
+decisions), `docs/08` (pack mineral and element budget), `docs/urun/` (EV-74 datasheet,
+integration, safety/warranty, brochure), `cikti/RAPOR.md` (numbers).

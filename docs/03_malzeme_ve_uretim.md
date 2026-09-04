@@ -106,4 +106,5 @@ A-alt: 162 → **412 USD/kWh** (SE 50 USD/kg). Ölçek senaryosu (SE 25, verim %
 SE tek başına malzeme maliyetinin ~%55'idir (1.4–1.9 kg SE/kWh). Ekonomik hedef bandı 165–200 USD/kWh
 için SE ≤ 25 USD/kg **ve** verim ≥ %90 **ve** 10 GWh ölçeği birlikte gerekir; 120 USD/kWh mevcut karma
 ile ulaşılamaz (gen-2: SE %18, A-Fe katot, SE ≤ 15 USD/kg). Grafik: `cikti/duyarlilik.png`, tablo:
-`cikti/RAPOR.md §9`.
+`cikti/RAPOR.md §9`. Tam element ve cevher dökümü (Standard / Pro / Fe):
+`docs/08_paket_maden_ve_element_butcesi.md`.
