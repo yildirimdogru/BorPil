@@ -439,3 +439,48 @@ def sarj_simulasyonu(p: PaketSonucu, T_ortam_C: float = 20.0, T_baslangic_C: flo
         sinir_dagilimi={k: v / toplam for k, v in sinir.items()},
         v_maks_hucre=v_maks_gorulen,
     )
+
+
+# ---------------------------------------------------------------------------
+# Darbe / AC kendinden ısıtma (invertör + motor sargısı üzerinden, kHz)
+# ---------------------------------------------------------------------------
+
+def darbe_isitma_gucu_kW(p: PaketSonucu, T_C: float, c_orani_rms: float = 1.0,
+                         bulk_kesri: float | None = None) -> float:
+    """
+    kHz frekansta çift yönlü akımla hücrenin kendi direnci üzerinden ısınma gücü: P = I_rms²·R_bulk(T)·n.
+    Yüksek frekansta arayüz (R_ct‖C_dl) kısa devre olur; akım yalnız 'bulk' iyonik dirençten
+    (ayırıcı + kompozit) geçer → R_bulk = ASR_toplam − ASR_arayüz(T). Yarım periyot yükü çift tabaka
+    yükünün çok altında kaldığı için net Na kaplaması beklenmez (EIS ile doğrulanacak — bkz. docs/06).
+    bulk_kesri verilirse R_bulk = bulk_kesri × R_toplam alınır.
+    """
+    h = p.hucre
+    R_toplam = hucre_direnci_ohm(h, T_C)
+    if bulk_kesri is None:
+        t = h.tasarim
+        asr_arayuz = t.arayuz_direnci_ohm_cm2 / float(arrhenius(1.0, EA_ARAYUZ_EV, T_C + C_TO_K,
+                                                                  t.calisma_sicakligi_C + C_TO_K))
+        R_bulk = max(R_toplam - asr_arayuz / h.elektrot_alani_cm2, 0.0)
+    else:
+        R_bulk = bulk_kesri * R_toplam
+    I_rms = c_orani_rms * h.hucre_kapasite_Ah
+    return I_rms**2 * R_bulk * p.hucre_sayisi / 1e3
+
+
+def on_isitma_suresi_dk(p: PaketSonucu, T_baslangic_C: float, T_hedef_C: float, T_ortam_C: float | None = None,
+                        ptc_kW: float = 0.0, darbe_c_orani: float = 0.0, dt: float = 10.0) -> tuple[float, float]:
+    """PTC ve/veya darbe ısıtma ile T_hedef'e ulaşma süresi (dk) ve harcanan enerji (kWh, paketten)."""
+    T = T_baslangic_C
+    Ta = T_baslangic_C if T_ortam_C is None else T_ortam_C
+    C = p.paket_kutle_kg * p.gereksinim.paket_isi_kapasitesi_kJ_kgK * 1e3
+    UA = p.isi_kaybi_W_per_K
+    t = 0.0
+    E_J = 0.0
+    while T < T_hedef_C and t < 6 * 3600:
+        P_darbe = darbe_isitma_gucu_kW(p, T, darbe_c_orani) * 1e3 if darbe_c_orani > 0 else 0.0
+        P = ptc_kW * 1e3 + P_darbe
+        T += (P - UA * (T - Ta)) * dt / C
+        # darbe ısıtmada invertör/motor kaybı ~%10 ek; PTC %100
+        E_J += (ptc_kW * 1e3 + P_darbe * 1.10) * dt
+        t += dt
+    return t / 60.0, E_J / 3.6e6

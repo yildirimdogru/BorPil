@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import numpy as np
+
 from .hucre import HucreSonucu, HucreTasarimi, hesapla
 
 
@@ -32,10 +34,15 @@ class PaketGereksinimi:
     # eklenir. Hakem önerisi aralığı: 0.65-0.72 kütle, 0.50-0.58 hacim.
     hucre_paket_kutle_orani: float = 0.72
     hucre_paket_hacim_orani: float = 0.56
-    # Maliyet: hücre imalat çarpanı (malzeme → hücre) ve paket düzeyi ek maliyet
+    # Maliyet: hücre imalat çarpanı (malzeme → hücre), ilk geçiş verimi (fire malzeme maliyetine yansır)
+    # ve paket düzeyi ek maliyet (BMS, ısıtıcı, yalıtım, muhafaza, montaj)
     imalat_carpani: float = 1.55
+    ilk_gecis_verimi: float = 1.0
     paket_ek_usd_kWh: float = 22.0
-    # Isıl
+    # Isıl / ısıtıcı güvenliği
+    isitici_guc_kW: float = 6.0
+    isitici_donanim_kesici_C: float = 80.0   # BMS'ten bağımsız termal kesici (bimetal/termal sigorta)
+    na_erime_C: float = 97.8
     yalitim_kalinlik_mm: float = 12.0
     yalitim_k_W_mK: float = 0.022           # aerojel keçe
     paket_yuzey_m2: float = 5.5
@@ -73,6 +80,8 @@ class PaketSonucu:
     hizli_sarj_min_T_C: float = 0.0          # CCD/SF ile hizli_sarj_kW'a izin veren en düşük paket sıcaklığı
     kisa_devre_akimi_45C_kA: float = 0.0
     kisa_devre_akimi_m10C_A: float = 0.0
+    isitici_takili_isinma_K_per_h: float = 0.0   # ısıtıcı takılı kalırsa (UA ile) ısınma hızı
+    isitici_takili_na_erime_dk: float = 0.0      # 35 °C'den Na erimesine süre (BMS kesmezse)
     uyarilar: list[str] = None  # type: ignore[assignment]
 
     def ozet(self) -> str:
@@ -93,6 +102,8 @@ class PaketSonucu:
             f"tab sürekli {self.tab_akim_yogunlugu_surekli_A_mm2:.1f} A/mm²; hızlı şarj ({g.hizli_sarj_kW:.0f} kW) için "
             f"paket ≥ {self.hizli_sarj_min_T_C:.0f} °C; beklenen kısa devre akımı 45 °C: {self.kisa_devre_akimi_45C_kA:.1f} kA, "
             f"−10 °C: {self.kisa_devre_akimi_m10C_A:.0f} A",
+            f"Isıtıcı güvenliği: takılı kalırsa +{self.isitici_takili_isinma_K_per_h:.0f} K/h, 35 °C → Na erimesi "
+            f"{self.isitici_takili_na_erime_dk:.0f} dk; bağımsız donanım kesici {g.isitici_donanim_kesici_C:.0f} °C",
         ] + [f"  ! {u}" for u in (self.uyarilar or [])])
 
 
@@ -125,7 +136,8 @@ def boyutlandir(tasarim: HucreTasarimi, gereksinim: PaketGereksinimi = PaketGere
     UA = gereksinim.yalitim_k_W_mK * gereksinim.paket_yuzey_m2 / (gereksinim.yalitim_kalinlik_mm * 1e-3)
     on_isitma_kWh = paket_kutle * gereksinim.paket_isi_kapasitesi_kJ_kgK * 35.0 / 3600.0
 
-    maliyet = E * (h.malzeme_usd_per_kwh * gereksinim.imalat_carpani + gereksinim.paket_ek_usd_kWh)
+    maliyet = E * (h.malzeme_usd_per_kwh / gereksinim.ilk_gecis_verimi * gereksinim.imalat_carpani
+                   + gereksinim.paket_ek_usd_kWh)
 
     # --- Elektrik mimarisi kontrolleri (EE incelemesi)
     from . import simulasyon as _sm  # döngüsel içe aktarmayı önlemek için yerel
@@ -158,6 +170,18 @@ def boyutlandir(tasarim: HucreTasarimi, gereksinim: PaketGereksinimi = PaketGere
         uyarilar.append(f"UYARI: −10 °C'de beklenen kısa devre akımı ({I_kd_m10:.0f} A) sürekli çalışma akımının 2 katından düşük → "
                         f"sigorta soğukta kısa devreyi ayırt edemez; akım-plausibilite/dI/dt ile kontaktör açma gerekir.")
 
+    # --- Isıtıcı takılı kalma analizi (ISO 26262 tehlike: Na erimesi)
+    C_isil_J_K = paket_kutle * gereksinim.paket_isi_kapasitesi_kJ_kgK * 1e3
+    P_isitici_W = gereksinim.isitici_guc_kW * 1e3
+    isinma_K_h = (P_isitici_W - UA * 15.0) / C_isil_J_K * 3600.0   # 35 °C paket, 20 °C ortam
+    # dT/dt = (P − UA(T−T_amb))/C → çözüm: t = (C/UA)·ln[(P − UA·(T0−Ta)) / (P − UA·(T1−Ta))]
+    T0, T1, Ta = 35.0, gereksinim.na_erime_C, 20.0
+    pay = P_isitici_W - UA * (T0 - Ta)
+    payda = P_isitici_W - UA * (T1 - Ta)
+    erime_dk = (C_isil_J_K / UA * np.log(pay / payda) / 60.0) if payda > 0 else float("inf")
+    if gereksinim.isitici_donanim_kesici_C >= gereksinim.na_erime_C - 10:
+        uyarilar.append("KRİTİK: ısıtıcı donanım kesicisi Na erime noktasına 10 K'den yakın.")
+
     return PaketSonucu(
         gereksinim=gereksinim, hucre=h, seri=seri, paralel=paralel, hucre_sayisi=n,
         gercek_enerji_kWh=E, kullanilabilir_enerji_kWh=E * gereksinim.kullanilabilir_soc_penceresi,
@@ -169,7 +193,8 @@ def boyutlandir(tasarim: HucreTasarimi, gereksinim: PaketGereksinimi = PaketGere
         isi_kaybi_W_per_K=UA, on_isitma_kWh_minus10_to_25=on_isitma_kWh,
         V_min_paket=V_min_p, V_maks_paket=V_maks_p, tepe_akim_paket_A=I_tepe,
         tab_akim_yogunlugu_surekli_A_mm2=j_tab_surekli, hizli_sarj_min_T_C=T_kapi,
-        kisa_devre_akimi_45C_kA=I_kd_45 / 1e3, kisa_devre_akimi_m10C_A=I_kd_m10, uyarilar=uyarilar,
+        kisa_devre_akimi_45C_kA=I_kd_45 / 1e3, kisa_devre_akimi_m10C_A=I_kd_m10,
+        isitici_takili_isinma_K_per_h=isinma_K_h, isitici_takili_na_erime_dk=erime_dk, uyarilar=uyarilar,
     )
 
 
