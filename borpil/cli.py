@@ -34,6 +34,14 @@ def main(argv: list[str] | None = None) -> int:
     su.add_argument("--ortam", type=float, default=20.0, help="ortam sıcaklığı (°C)")
     su.add_argument("--isitici", type=float, default=35.0, help="ısıtıcı hedef sıcaklığı (°C); 0 → kapalı")
 
+    sa = alt.add_parser("sarj", help="DC hızlı şarj simülasyonu (sıcaklık kapılı, CCD sınırlı)")
+    sa.add_argument("varyant", nargs="?", default="A", choices=list(hc.VARYANTLAR))
+    sa.add_argument("--kwh", type=float, default=75.0)
+    sa.add_argument("--baslangic", type=float, default=25.0, help="paket başlangıç sıcaklığı (°C)")
+    sa.add_argument("--ortam", type=float, default=20.0)
+    sa.add_argument("--cihaz-kw", type=float, default=150.0)
+    sa.add_argument("--soc", type=float, nargs=2, default=(0.10, 0.80), metavar=("BAS", "HEDEF"))
+
     alt.add_parser("termo", help="teorik termodinamik sınırlar")
 
     r = alt.add_parser("rapor", help="tam rapor + grafikler üret")
@@ -66,6 +74,15 @@ def main(argv: list[str] | None = None) -> int:
               f"paket T {s.T_baslangic_C:.0f}→{s.T_bitis_C:.0f} °C, min hücre gerilimi {s.V_min_hucre:.2f} V, "
               f"ısıtıcı {s.isitici_kWh:.1f} kWh, güç kısıtı {s.guc_kisiti_s:.0f} s / {s.guc_acigi_kWh:.2f} kWh, "
               f"araç kütlesi {s.toplam_kutle_kg:.0f} kg")
+    elif a.komut == "sarj":
+        g = pk.PaketGereksinimi(brut_enerji_kWh=a.kwh)
+        pkt = pk.boyutlandir(hc.VARYANTLAR[a.varyant], g)
+        s = sm.sarj_simulasyonu(pkt, T_ortam_C=a.ortam, T_baslangic_C=a.baslangic, soc_baslangic=a.soc[0],
+                                soc_hedef=a.soc[1], sarj_cihazi_kW=a.cihaz_kw)
+        sinir = ", ".join(f"{k} %{v*100:.0f}" for k, v in s.sinir_dagilimi.items() if v > 0)
+        print(f"SOC {a.soc[0]:.0%}→{a.soc[1]:.0%}: {s.sure_dk:.0f} dk, ortalama {s.ort_guc_kW:.0f} kW, tepe {s.tepe_guc_kW:.0f} kW, "
+              f"paket T {s.T_baslangic_C:.0f}→{s.T_bitis_C:.0f} °C, ısıtıcı {s.isitici_kWh:.1f} kWh, I²R {s.kayip_I2R_kWh:.2f} kWh, "
+              f"şebeke {s.enerji_sebeke_kWh:.1f} kWh / hücre {s.enerji_hucre_kWh:.1f} kWh, V_maks {s.v_maks_hucre:.2f} V; sınır: {sinir}")
     elif a.komut == "termo":
         for k in td.metal_hava_kiyas() + [td.dbfc()]:
             print(f"{k.ad:<40s} {k.reaksiyon:<22s} E°={k.E0_V:.3f} V  {k.kapasite_mah_g:6.0f} mAh/g  "

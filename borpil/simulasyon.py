@@ -253,3 +253,95 @@ def sabit_akim_desarj(h: HucreSonucu, c_orani: float, T_C: float, n_nokta: int =
     Ah = (1 - soc) * h.hucre_kapasite_Ah
     gecerli = V > 0.6 * h.gerilim_V
     return Ah[gecerli], V[gecerli]
+
+
+# ---------------------------------------------------------------------------
+# Şarj simülasyonu (sıcaklık kapılı, kritik akım yoğunluğu sınırlı)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SarjSonucu:
+    sure_dk: float                    # SOC_baslangic → SOC_hedef süresi
+    enerji_sebeke_kWh: float          # şarj cihazından çekilen (ısıtıcı dâhil)
+    enerji_hucre_kWh: float           # hücrelere depolanan (E·ΔSOC)
+    isitici_kWh: float
+    kayip_I2R_kWh: float
+    T_baslangic_C: float
+    T_bitis_C: float
+    ort_guc_kW: float
+    tepe_guc_kW: float
+    sinir_dagilimi: dict[str, float]  # süre kesri: 'ccd' | 'sarj_cihazi' | 'gerilim' | 'on_isitma'
+    v_maks_hucre: float
+
+
+def sarj_simulasyonu(p: PaketSonucu, T_ortam_C: float = 20.0, T_baslangic_C: float | None = None,
+                     soc_baslangic: float = 0.10, soc_hedef: float = 0.80,
+                     sarj_cihazi_kW: float = 150.0, sarj_cihazi_maks_A: float = 500.0,
+                     V_maks_hucre: float | None = None, T_sarj_min_C: float = 25.0,
+                     isitici_hedef_C: float = 40.0, isitici_guc_kW: float = 6.0,
+                     j_kritik_marj: float = 0.8, sogutma_hedef_C: float = 60.0,
+                     sogutma_guc_W_per_K: float = 150.0, dt: float = 5.0) -> SarjSonucu:
+    """
+    DC hızlı şarj: her adımda akım = min( kritik akım yoğunluğu(T)·marj·alan,  şarj cihazı gücü / V_paket,
+    şarj cihazı akım sınırı,  V_maks'a ulaşmadan izin verilen akım ).  Paket T_sarj_min'in altındaysa
+    önce ısıtıcı (şebekeden beslenir) çalışır; şarj sırasında da hedef sıcaklığa kadar ısıtır.
+    60 °C üstünde sıvı plaka soğutması devreye girer. Na kaplama (şarj) yönü kritik olduğu için
+    deşarjdaki 2× tolerans burada yoktur; ek güvenlik marjı j_kritik_marj.
+    """
+    if V_maks_hucre is None:
+        V_maks_hucre = p.hucre.gerilim_V + 0.40
+    h = p.hucre
+    n, seri, paralel = p.hucre_sayisi, p.seri, p.paralel
+    T = T_ortam_C if T_baslangic_C is None else T_baslangic_C
+    C_isil = p.paket_kutle_kg * p.gereksinim.paket_isi_kapasitesi_kJ_kgK * 1e3
+    UA = p.isi_kaybi_W_per_K
+    kapasite_As = h.hucre_kapasite_Ah * 3600.0
+    soc = soc_baslangic
+    sure = 0.0
+    sebeke_J = isitici_J = kayip_J = 0.0
+    tepe_W = 0.0
+    sinir = {"ccd": 0.0, "sarj_cihazi": 0.0, "gerilim": 0.0, "on_isitma": 0.0}
+    v_maks_gorulen = 0.0
+    T0 = T
+
+    while soc < soc_hedef and sure < 6 * 3600:
+        R_h = hucre_direnci_ohm(h, T)
+        U = float(ocv(soc, h.gerilim_V))
+        P_isitici = isitici_guc_kW * 1e3 if T < isitici_hedef_C else 0.0
+        if T < T_sarj_min_C:
+            I_h = 0.0
+            etiket = "on_isitma"
+        else:
+            I_ccd = kritik_akim_yogunlugu_mA_cm2(T) * j_kritik_marj * h.elektrot_alani_cm2 / 1e3
+            V_paket = seri * U
+            I_cihaz = min(sarj_cihazi_kW * 1e3 / V_paket, sarj_cihazi_maks_A) / paralel
+            I_gerilim = max(0.0, (V_maks_hucre - U) / R_h)
+            I_h, etiket = min((I_ccd, "ccd"), (I_cihaz, "sarj_cihazi"), (I_gerilim, "gerilim"), key=lambda x: x[0])
+        V_h = U + I_h * R_h
+        v_maks_gorulen = max(v_maks_gorulen, V_h)
+        P_sarj = V_h * I_h * n
+        tepe_W = max(tepe_W, P_sarj)
+        sinir[etiket] += dt
+        soc += I_h * dt / kapasite_As
+        Q = I_h**2 * R_h * n
+        P_sogutma = sogutma_guc_W_per_K * (T - sogutma_hedef_C) if T > sogutma_hedef_C else 0.0
+        T += (Q + P_isitici - P_sogutma - UA * (T - T_ortam_C)) * dt / C_isil
+        kayip_J += Q * dt
+        isitici_J += P_isitici * dt
+        sebeke_J += (P_sarj + P_isitici) * dt
+        sure += dt
+
+    depolanan_kWh = p.gercek_enerji_kWh * (soc - soc_baslangic)
+    toplam = max(sure, 1.0)
+    return SarjSonucu(
+        sure_dk=sure / 60.0,
+        enerji_sebeke_kWh=sebeke_J / 3.6e6,
+        enerji_hucre_kWh=depolanan_kWh,
+        isitici_kWh=isitici_J / 3.6e6,
+        kayip_I2R_kWh=kayip_J / 3.6e6,
+        T_baslangic_C=T0, T_bitis_C=T,
+        ort_guc_kW=sebeke_J / toplam / 1e3,
+        tepe_guc_kW=tepe_W / 1e3,
+        sinir_dagilimi={k: v / toplam for k, v in sinir.items()},
+        v_maks_hucre=v_maks_gorulen,
+    )
