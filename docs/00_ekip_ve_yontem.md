@@ -17,7 +17,7 @@ koda bağlıdır; kod değişirse rapor değişir.
 | **A6 — Sistem mühendisi** | Otomotiv | Paket mimarisi, gerilim, güç, ısıl yönetim, sürüş çevrimi, maliyet; ürün formu belgeler | `paket.py`, `karsilastirma.py`, `docs/04`, `docs/08`, `docs/urun/` |
 | **H1, H2 — Bağımsız hakemler (1. tur)** | Kimya/fizik; sayısal model | Kör inceleme: sabitler, literatür uyumu, birim hataları | `docs/06 §6.3` |
 | **H3, H4 — Bağımsız uzmanlar (2. tur)** | Elektrik-elektronik; EV batarya üretimi | Mimari, BMS, ısıl-elektrik, güvenlik; format, proses, verim, maliyet, nitelendirme | `docs/07` |
-| **Kurul (5 üye)** | Tüm disiplinler | H3/H4 önerilerini oylar, ödünleşimleri karara bağlar | `docs/07 §7.3` |
+| **Kurul (5 üye)** | Tüm disiplinler | H3/H4 önerilerini oylar, ödünleşimleri karara bağlar | `docs/07 §7.3`; 3. tur `docs/09` |
 
 ## Yöntem
 
@@ -56,6 +56,7 @@ koda bağlıdır; kod değişirse rapor değişir.
 | K9 | **A-alt 1. nesil ticari baz çizgisi**, A hedef (kurul P11) | 30 µm serbest film ve 20 µm Na folyo bugün endüstriyel değil; üretilebilirlik > enerji yoğunluğu. |
 | K10 | 120s3p, **3 bağımsız dizi**, pouch-in-frame, 80 °C ısıtıcı kesici, 20 kW şebeke ısıtıcı, 0.8 kW atık ısı, parkta ısıtma yok (kurul P4–P10, P19) | Elektrik-elektronik ve üretici incelemeleri; güvenlik oyları baskın. |
 | K11 | Maliyet modeli gen-1 gerçekçi: ×1.75, verim %75, +32 USD/kWh (kurul P13) | Şeffaflık; 120 USD/kWh iddiasından vazgeçildi, hedef bandı 165–200. |
+| K12 | 35–60 °C bandı pazar pivotu değil; atık ısı SKU 8/10; süperkap gen-1 baz değil (P21–P26) | 3. tur oturum `docs/09`: Türkiye iki uç (Doğu kışı, güney yazı); zincir tutar tutuşturmaz; katalizör = priz + kayıp ısı + darbe + tampon |
 
 ## Ürün formu belgeler
 

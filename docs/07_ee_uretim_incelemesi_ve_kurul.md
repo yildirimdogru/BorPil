@@ -115,3 +115,6 @@ Darbe ısıtma yol haritasında (derin soğuktan çıkış: −20 → 0 °C, 10 
 8. Soğuk performans paketi: −10/−20 °C, PTC 3 kW + atık ısı (+ pilot sonrası darbe ısıtma).
 9. A-numune ≥ 500 çevrim @45 °C; B-numune 800 çevrim WIP proses.
 10. Çok düğümlü ısıl + 3p akım paylaşımı: B-numune HIL kalibrasyonu (ertelendi).
+
+3. tur oturum (35–60 °C bandı, atık ısı ekosistemi notu 8/10, zincirleme ısınma, süperkapasitör
+katalizör, P21–P26): `docs/09_isil_ekosistem_ve_soguk_baslangic.md`.

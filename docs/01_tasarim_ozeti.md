@@ -83,5 +83,6 @@ Ayrıntılar: `docs/02` (kimya), `docs/03` (malzeme/üretim), `docs/04` (hücre/
 `docs/05` (güvenlik/çevre), `docs/06` (riskler, 1. tur hakem bulguları, yol haritası),
 `docs/07` (elektrik-elektronik ve üretici incelemeleri, kurul kararları),
 `docs/08` (paket maden ve element bütçesi),
+`docs/09` (ısıl ekosistem ve soğuk başlangıç — 3. tur kurul),
 `docs/urun/` (satışa-hazır ürün formu: veri formu, entegrasyon, güvenlik/garanti, broşür),
 `cikti/RAPOR.md` (sayılar).

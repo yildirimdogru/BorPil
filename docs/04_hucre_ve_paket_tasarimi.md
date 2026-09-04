@@ -75,6 +75,8 @@ Sınır Na'nın erime noktasıdır (97.8 °C).
 - **Park / V2G:** 35 °C tutulmaz (günde 3.6–11 kWh); paket soğur, V2G akımı CCD(T) ile kapılanır.
 - **Stres senaryosu** (−20 °C, PTC arızalı): araç çevrimi izleyemez (güç kısıtı ~1.6 saat, 16 kWh açık,
   1.8 kWh rejen mekanik frene); atık ısı ile paket zamanla 31 °C'ye çıkar. BMS sürücüyü bilgilendirir.
+- **3. tur (P21–P26):** 35–60 °C Türkiye'yi öldürmez ama 1. UX riskidir; atık ısı ekosistemi **8/10**;
+  süperkapasitör gen-1 baz değil (konfor tamponu / darbe-ısıtma kaynağı). Ayrıntı `docs/09`.
 
 ## 4.4 Araç düzeyi sonuçlar (WLTP-benzeri sentetik çevrim)
 
