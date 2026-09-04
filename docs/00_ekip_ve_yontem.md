@@ -15,7 +15,9 @@ koda bağlıdır; kod değişirse rapor değişir.
 | **A4 — Matematikçi / geometrici** | Matematik, geometri | [B12H12]²⁻ ikosahedronu, kafes boşluk analizi, paketleme geometrisi, sayısal çözümler | `geometri.py`, `simulasyon.py` çözücü |
 | **A5 — Biyolog / toksikolog** | Biyoloji, çevre | Bor, sodyum, vanadyum toksikolojisi; hidrojen salımı; yaşam döngüsü ve geri dönüşüm | `docs/05` |
 | **A6 — Sistem mühendisi** | Otomotiv | Paket mimarisi, gerilim, güç, ısıl yönetim, sürüş çevrimi, maliyet | `paket.py`, `karsilastirma.py`, `docs/04` |
-| **H1, H2 — Bağımsız hakemler** | Kimya/fizik; sayısal model | Kör inceleme: sabitler, literatür uyumu, birim hataları | `docs/06` (bulgular) |
+| **H1, H2 — Bağımsız hakemler (1. tur)** | Kimya/fizik; sayısal model | Kör inceleme: sabitler, literatür uyumu, birim hataları | `docs/06 §6.3` |
+| **H3, H4 — Bağımsız uzmanlar (2. tur)** | Elektrik-elektronik; EV batarya üretimi | Mimari, BMS, ısıl-elektrik, güvenlik; format, proses, verim, maliyet, nitelendirme | `docs/07` |
+| **Kurul (5 üye)** | Tüm disiplinler | H3/H4 önerilerini oylar, ödünleşimleri karara bağlar | `docs/07 §7.3` |
 
 ## Yöntem
 
@@ -50,4 +52,7 @@ koda bağlıdır; kod değişirse rapor değişir.
 | K5 | Anot: Na metal (ana), sert karbon (güvenli varyant) | Na metal en yüksek enerji; kloso-borat Na'ya kararlı. Sert karbon dendrit riskini kaldırır, %25 enerji kaybı. |
 | K6 | Al akım toplayıcı her iki tarafta | Na, Al ile alaşım yapmaz → Cu gereksiz (maliyet, kütle). |
 | K7 | Çalışma penceresi 35–60 °C (ısıtıcı hedefi 35 °C), hücre tasarım noktası 45 °C | Kloso-borat iletkenliği sıcaklıkla artar (Ea ≈ 0.4 eV); yanıcı elektrolit olmadığı için ısıl kaçak riski yok, yalıtım + ısıtıcı ile yönetim. Isıtıcı %3 menzil karşılığında tepe gücü 3× artırır. |
-| K8 | Sonuçlar tasarım noktası + muhafazakâr alt tahmin (A-alt) olarak **band** hâlinde raporlanır | Hakem H1 bulgusu: 30 µm SE / 20 µm Na / 15 Ω·cm² varsayımları üst sınırdır; 60 µm / 50 µm / 30 Ω·cm² ile 175 Wh/kg. |
+| K8 | Sonuçlar tasarım noktası + muhafazakâr alt tahmin (A-alt) olarak **band** hâlinde raporlanır | Hakem H1 bulgusu: 30 µm SE / 20 µm Na / 15 Ω·cm² varsayımları üst sınırdır; 60 µm / 50 µm / 30 Ω·cm² ile 177 Wh/kg. |
+| K9 | **A-alt 1. nesil ticari baz çizgisi**, A hedef (kurul P11) | 30 µm serbest film ve 20 µm Na folyo bugün endüstriyel değil; üretilebilirlik > enerji yoğunluğu. |
+| K10 | 120s3p, **3 bağımsız dizi**, pouch-in-frame, 80 °C ısıtıcı kesici, 20 kW şebeke ısıtıcı, 0.8 kW atık ısı, parkta ısıtma yok (kurul P4–P10, P19) | Elektrik-elektronik ve üretici incelemeleri; güvenlik oyları baskın. |
+| K11 | Maliyet modeli gen-1 gerçekçi: ×1.75, verim %75, +32 USD/kWh (kurul P13) | Şeffaflık; 120 USD/kWh iddiasından vazgeçildi, hedef bandı 165–200. |
