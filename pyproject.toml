@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "borpil"
+version = "0.1.0"
+description = "BorPil: bor esaslı, lityumsuz katı hâl EV bataryası tasarımı ve simülasyon paketi"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "BorPil Bilim Ekibi" }]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.scripts]
+borpil = "borpil.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["borpil*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
