@@ -313,8 +313,47 @@ def test_surus_menzil_makul_ve_enerji_tutarli():
 def test_soguk_guc_acigi_kaydedilir():
     p = pk.boyutlandir(hc.BORPIL_A)
     s = sm.surus_simulasyonu(p, T_ortam_C=-20, isitici_hedef_C=None)
-    assert s.guc_kisiti_s > 0 and s.guc_acigi_kWh > 0
-    assert s.V_min_hucre == pytest.approx(sm.v_min_hucre(p.hucre), abs=1e-6)
+    # Soğukta deşarj CCD sınırı devrede: çevrimin büyük kısmı kısıtlı, araç yavaşlar, rejen mekanik frene gider
+    assert s.guc_kisiti_s > 0.2 * s.sure_h * 3600 and s.guc_acigi_kWh > 10
+    assert s.ort_hiz_kmh < 46
+    assert s.rejen_kaybi_kWh > 1.0
+
+
+def test_akim_siniri_ortak_ve_yonlu():
+    p = pk.boyutlandir(hc.BORPIL_A)
+    h = p.hucre
+    I_d = sm.akim_siniri_A(h, 25, "desarj")
+    I_s = sm.akim_siniri_A(h, 25, "sarj")
+    j = 1.5 * h.elektrot_alani_cm2 / 1e3
+    assert I_d == pytest.approx(j * sm.DESARJ_TOLERANSI)
+    assert I_s == pytest.approx(j / sm.SARJ_GUVENLIK_KATSAYISI)
+    # tepe güç fonksiyonu ile sürüş simülasyonu aynı sınırı kullanır: −10 °C'de tepe güç < 10 kW
+    assert sm.maks_guc_kW(p, -10) < 10
+    assert sm.maks_sarj_gucu_kW(p, 45) >= 75 > sm.maks_sarj_gucu_kW(p, 35)
+
+
+def test_sarj_simulasyonu_tutarli():
+    p = pk.boyutlandir(hc.BORPIL_A)
+    s45 = sm.sarj_simulasyonu(p, T_baslangic_C=45)
+    s25 = sm.sarj_simulasyonu(p, T_baslangic_C=25)
+    sm10 = sm.sarj_simulasyonu(p, T_baslangic_C=-10)
+    assert s45.sure_dk < s25.sure_dk < sm10.sure_dk
+    assert s45.enerji_hucre_kWh == pytest.approx(0.70 * p.gercek_enerji_kWh, rel=0.02)
+    assert s45.enerji_sebeke_kWh > s45.enerji_hucre_kWh            # I²R + ısıtıcı
+    assert s45.v_maks_hucre <= p.hucre.gerilim_V + 0.40 + 1e-6
+    assert sm10.sinir_dagilimi["on_isitma"] > 0.2
+    assert s45.T_bitis_C <= 61.0                                    # soğutma tavanı
+
+
+def test_paket_elektrik_kontrolleri():
+    p = pk.boyutlandir(hc.BORPIL_A)
+    assert p.V_min_paket == pytest.approx(p.seri * sm.v_min_hucre(p.hucre))
+    assert p.V_maks_paket < p.gereksinim.invertor_dc_link_maks_V
+    assert p.tab_akim_yogunlugu_surekli_A_mm2 < 2.5
+    assert 40 <= p.hizli_sarj_min_T_C <= 46
+    assert p.kisa_devre_akimi_45C_kA > 5 and p.kisa_devre_akimi_m10C_A < 400
+    g800 = pk.PaketGereksinimi(nominal_gerilim_V=800.0)
+    assert any("KRİTİK" in u for u in pk.boyutlandir(hc.BORPIL_A, g800).uyarilar)
 
 
 def test_dusuk_gerilimli_kimyada_guc_ve_desarj_calisir():

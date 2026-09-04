@@ -19,6 +19,14 @@ class PaketGereksinimi:
     surekli_guc_kW: float = 80.0      # ~1C sürekli (otoyol tırmanış senaryosu)
     tepe_guc_kW: float = 200.0        # 10 s darbe
     hizli_sarj_kW: float = 75.0       # 1. nesil: Na kaplama kritik akım yoğunluğu ile sınırlı (~1C)
+    # Elektrik mimarisi (EE incelemesi)
+    invertor_dc_link_maks_V: float = 500.0   # 400 V sınıfı (750 V Si/SiC); 800 V sınıfı için 860
+    sarj_cihazi_maks_V: float = 500.0        # CCS 400 V sınıfı; 800 V sınıfı için 1000
+    sarj_cihazi_maks_A: float = 500.0
+    busbar_kontaktor_mohm: float = 2.0       # busbar + kontaktör + sigorta toplamı
+    tab_genislik_mm: float = 100.0
+    tab_kalinlik_mm: float = 0.3             # Al tab (EE: 0.2 → 0.3 mm, sürekli ≤ 2.5 A/mm²)
+    tab_akim_yogunlugu_surekli_maks_A_mm2: float = 2.5
     # Kütle/hacim çarpanları: CTP (cell-to-pack) mimarisi; katı hâl (yanıcı elektrolit yok)
     # → daha az yangın bariyeri, ancak yığın basıncı fikstürü (1-2 MPa), 12 mm yalıtım ve ısıtıcı
     # eklenir. Hakem önerisi aralığı: 0.65-0.72 kütle, 0.50-0.58 hacim.
@@ -58,6 +66,14 @@ class PaketSonucu:
     tepe_akim_yogunlugu_mA_cm2: float
     isi_kaybi_W_per_K: float
     on_isitma_kWh_minus10_to_25: float
+    V_min_paket: float = 0.0
+    V_maks_paket: float = 0.0
+    tepe_akim_paket_A: float = 0.0
+    tab_akim_yogunlugu_surekli_A_mm2: float = 0.0
+    hizli_sarj_min_T_C: float = 0.0          # CCD/SF ile hizli_sarj_kW'a izin veren en düşük paket sıcaklığı
+    kisa_devre_akimi_45C_kA: float = 0.0
+    kisa_devre_akimi_m10C_A: float = 0.0
+    uyarilar: list[str] = None  # type: ignore[assignment]
 
     def ozet(self) -> str:
         g = self.gereksinim
@@ -73,7 +89,11 @@ class PaketSonucu:
             f"Isıl: kayıp {self.isi_kaybi_W_per_K:.1f} W/K (ΔT=40 K → {self.isi_kaybi_W_per_K*40:.0f} W); "
             f"-10→25 °C ön ısıtma {self.on_isitma_kWh_minus10_to_25:.1f} kWh",
             f"Maliyet (varsayımsal ölçek): {self.maliyet_usd:,.0f} USD → {self.maliyet_usd_kWh:.0f} USD/kWh",
-        ])
+            f"Elektrik: pencere {self.V_min_paket:.0f}–{self.V_maks_paket:.0f} V, tepe akım {self.tepe_akim_paket_A:.0f} A, "
+            f"tab sürekli {self.tab_akim_yogunlugu_surekli_A_mm2:.1f} A/mm²; hızlı şarj ({g.hizli_sarj_kW:.0f} kW) için "
+            f"paket ≥ {self.hizli_sarj_min_T_C:.0f} °C; beklenen kısa devre akımı 45 °C: {self.kisa_devre_akimi_45C_kA:.1f} kA, "
+            f"−10 °C: {self.kisa_devre_akimi_m10C_A:.0f} A",
+        ] + [f"  ! {u}" for u in (self.uyarilar or [])])
 
 
 def boyutlandir(tasarim: HucreTasarimi, gereksinim: PaketGereksinimi = PaketGereksinimi(),
@@ -107,6 +127,37 @@ def boyutlandir(tasarim: HucreTasarimi, gereksinim: PaketGereksinimi = PaketGere
 
     maliyet = E * (h.malzeme_usd_per_kwh * gereksinim.imalat_carpani + gereksinim.paket_ek_usd_kWh)
 
+    # --- Elektrik mimarisi kontrolleri (EE incelemesi)
+    from . import simulasyon as _sm  # döngüsel içe aktarmayı önlemek için yerel
+    V_min_p = seri * _sm.v_min_hucre(h)
+    V_maks_p = seri * (h.gerilim_V + 0.40)
+    I_tepe = gereksinim.tepe_guc_kW * 1e3 / V_nom
+    tab_alan_mm2 = gereksinim.tab_genislik_mm * gereksinim.tab_kalinlik_mm
+    j_tab_surekli = (I_surekli_A / paralel) / tab_alan_mm2
+    uyarilar: list[str] = []
+    if V_maks_p > gereksinim.invertor_dc_link_maks_V:
+        uyarilar.append(f"KRİTİK: paket üst gerilimi {V_maks_p:.0f} V invertör DC-link tavanını "
+                        f"({gereksinim.invertor_dc_link_maks_V:.0f} V) aşıyor → seri sayısını azalt.")
+    if V_maks_p > gereksinim.sarj_cihazi_maks_V:
+        uyarilar.append(f"UYARI: paket üst gerilimi {V_maks_p:.0f} V şarj cihazı sınıfını ({gereksinim.sarj_cihazi_maks_V:.0f} V) aşıyor.")
+    if j_tab_surekli > gereksinim.tab_akim_yogunlugu_surekli_maks_A_mm2:
+        uyarilar.append(f"UYARI: tab sürekli akım yoğunluğu {j_tab_surekli:.1f} A/mm² > {gereksinim.tab_akim_yogunlugu_surekli_maks_A_mm2} A/mm².")
+    # Hızlı şarj sıcaklık kapısı: CCD/SF · alan · n · V ≥ hizli_sarj_kW olan en düşük T
+    T_kapi = 80.0
+    for T_C in [x / 2 for x in range(-40, 161)]:
+        if _sm.maks_sarj_gucu_kW(_p_gecici(h, n, seri, paralel), T_C) >= gereksinim.hizli_sarj_kW:
+            T_kapi = T_C
+            break
+    if T_kapi > 45.0:
+        uyarilar.append(f"UYARI: {gereksinim.hizli_sarj_kW:.0f} kW hızlı şarj için paket ≥ {T_kapi:.0f} °C gerekir (CCD/SF sınırı).")
+    R_paket_45 = _sm.hucre_direnci_ohm(h, 45.0) * seri / paralel + gereksinim.busbar_kontaktor_mohm * 1e-3
+    R_paket_m10 = _sm.hucre_direnci_ohm(h, -10.0) * seri / paralel + gereksinim.busbar_kontaktor_mohm * 1e-3
+    I_kd_45 = V_maks_p / R_paket_45
+    I_kd_m10 = V_maks_p / R_paket_m10
+    if I_kd_m10 < 2 * I_surekli_A:
+        uyarilar.append(f"UYARI: −10 °C'de beklenen kısa devre akımı ({I_kd_m10:.0f} A) sürekli çalışma akımının 2 katından düşük → "
+                        f"sigorta soğukta kısa devreyi ayırt edemez; akım-plausibilite/dI/dt ile kontaktör açma gerekir.")
+
     return PaketSonucu(
         gereksinim=gereksinim, hucre=h, seri=seri, paralel=paralel, hucre_sayisi=n,
         gercek_enerji_kWh=E, kullanilabilir_enerji_kWh=E * gereksinim.kullanilabilir_soc_penceresi,
@@ -116,4 +167,13 @@ def boyutlandir(tasarim: HucreTasarimi, gereksinim: PaketGereksinimi = PaketGere
         maliyet_usd=maliyet, maliyet_usd_kWh=maliyet / E,
         surekli_akim_yogunlugu_mA_cm2=j_surekli, tepe_akim_yogunlugu_mA_cm2=j_tepe,
         isi_kaybi_W_per_K=UA, on_isitma_kWh_minus10_to_25=on_isitma_kWh,
+        V_min_paket=V_min_p, V_maks_paket=V_maks_p, tepe_akim_paket_A=I_tepe,
+        tab_akim_yogunlugu_surekli_A_mm2=j_tab_surekli, hizli_sarj_min_T_C=T_kapi,
+        kisa_devre_akimi_45C_kA=I_kd_45 / 1e3, kisa_devre_akimi_m10C_A=I_kd_m10, uyarilar=uyarilar,
     )
+
+
+class _p_gecici:
+    """maks_sarj_gucu_kW için PaketSonucu'nun gerektirdiği alanları taşıyan hafif nesne."""
+    def __init__(self, h, n, seri, paralel):
+        self.hucre, self.hucre_sayisi, self.seri, self.paralel = h, n, seri, paralel

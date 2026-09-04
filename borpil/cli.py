@@ -63,7 +63,11 @@ def main(argv: list[str] | None = None) -> int:
         t = dataclasses.replace(t, **degisiklik)
         print(hc.hesapla(t, hedef_kapasite_Ah=a.ah).ozet())
     elif a.komut == "paket":
-        g = pk.PaketGereksinimi(brut_enerji_kWh=a.kwh, nominal_gerilim_V=a.volt)
+        if a.volt > 600:   # 800 V sınıfı: 1200 V SiC invertör (DC-link ≤ 860 V), 1000 V şarj cihazı
+            g = pk.PaketGereksinimi(brut_enerji_kWh=a.kwh, nominal_gerilim_V=a.volt,
+                                    invertor_dc_link_maks_V=860.0, sarj_cihazi_maks_V=1000.0)
+        else:
+            g = pk.PaketGereksinimi(brut_enerji_kWh=a.kwh, nominal_gerilim_V=a.volt)
         print(pk.boyutlandir(hc.VARYANTLAR[a.varyant], g).ozet())
     elif a.komut == "surus":
         g = pk.PaketGereksinimi(brut_enerji_kWh=a.kwh)
