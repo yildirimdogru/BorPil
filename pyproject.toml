@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "borpil"
 version = "0.1.0"
-description = "BorPil: elektrikli araçlar için lityumsuz, bor (kloso-borat) esaslı katı hâl sodyum bataryası tasarım ve simülasyon paketi"
+description = "BorPil: bor esaslı, lityumsuz katı hâl EV bataryası tasarımı ve simülasyon paketi"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
