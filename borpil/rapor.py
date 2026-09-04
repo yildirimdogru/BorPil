@@ -18,6 +18,7 @@ from . import malzemeler as mz
 from . import paket as pk
 from . import simulasyon as sm
 from . import termodinamik as td
+from . import yasayan_isil as yi
 
 
 def _plt():
@@ -188,6 +189,45 @@ def grafik_isitma_ve_sarj(cikti: Path, p: pk.PaketSonucu) -> Path:
     return yol
 
 
+def grafik_yasayan_isil(cikti: Path) -> Path:
+    """YIS: −10 °C'de 48 h park, prizli vs prizsiz vs gen-1 (ısı yok)."""
+    plt = _plt()
+    p = pk.boyutlandir(hc.BORPIL_A_ALT)
+    dog = yi.dogum(p)
+    iz_y = yi.park_iz(dog, -10.0, 48.0, prize=False)
+    iz_p = yi.park_iz(yi.dogum(p), -10.0, 48.0, prize=True)
+    ua = p.isi_kaybi_W_per_K
+    C = p.paket_kutle_kg * p.gereksinim.paket_isi_kapasitesi_kJ_kgK * 1e3
+    tau_h = (C / ua) / 3600.0
+    t = iz_y["t_h"]
+    T_g1 = -10.0 + (35.0 - (-10.0)) * np.exp(-t / tau_h)
+
+    fig, axes = plt.subplots(1, 2, figsize=(8.8, 3.6))
+    ax = axes[0]
+    ax.plot(t, T_g1, ls="--", c="0.4", label="Gen-1 (parkta ısı yok)")
+    ax.plot(iz_y["t_h"], iz_y["T_C"], label="YIS prizsiz")
+    ax.plot(iz_p["t_h"], iz_p["T_C"], label="YIS prizli")
+    ax.axhline(10, ls=":", c="C3", lw=0.8, label="Ölüm eşiği 10 °C")
+    ax.axhline(25, ls=":", c="C0", lw=0.6)
+    ax.axhline(35, ls=":", c="C1", lw=0.6)
+    ax.set_xlabel("Park (saat)")
+    ax.set_ylabel("Paket çekirdek T (°C)")
+    ax.set_title("−10 °C ortam, 48 h")
+    ax.legend(fontsize=7); ax.grid(alpha=0.3)
+
+    ax = axes[1]
+    ax.plot(iz_y["t_h"], iz_y["gosterge"], label="YIS prizsiz gösterge")
+    ax.plot(iz_p["t_h"], iz_p["gosterge"], label="YIS prizli gösterge")
+    ax.set_xlabel("Park (saat)")
+    ax.set_ylabel("Kullanıcı göstergesi (%)")
+    ax.set_ylim(-2, 105)
+    ax.set_title("Yaşam payı gizlenir; prizde SOC durur")
+    ax.legend(fontsize=7); ax.grid(alpha=0.3)
+    yol = cikti / "yasayan_isil_park.png"
+    fig.tight_layout(); fig.savefig(yol); plt.close(fig)
+    return yol
+
+
 # ---------------------------------------------------------------------------
 # Rapor
 # ---------------------------------------------------------------------------
@@ -222,6 +262,7 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
         yollar["katman"] = grafik_katmanlar(cikti, pB.hucre)
         yollar["iko"] = grafik_ikosahedron(cikti)
         yollar["isitma"] = grafik_isitma_ve_sarj(cikti, pB)
+        yollar["yasayan"] = grafik_yasayan_isil(cikti)
 
     md = []
     md.append("# BorPil — Hesaplanmış Tasarım Raporu (otomatik üretildi)\n")
@@ -336,6 +377,8 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
         md.append("## 12. Grafikler\n")
         for ad, yol in yollar.items():
             md.append(f"![{ad}]({yol.name})\n")
+
+    md.append(yi.markdown_bolum())
 
     rapor_yolu = cikti / "RAPOR.md"
     rapor_yolu.write_text("\n".join(md), encoding="utf-8")

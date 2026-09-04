@@ -450,3 +450,71 @@ def test_kimya_markdown_raporu():
     tarama = {t.ad: t for t in ky.elektrolit_taramasi()}
     assert tarama["Na2(CB9H10)(CB11H12)"].bulk_10C_yeterli
     assert not tarama["Na2(B12H12)(B10H10)"].bulk_10C_yeterli
+
+
+# --- Yaşayan ısıl sistem (YIS, P27) ------------------------------------------
+
+def test_yis_dogum_full_ve_sicak():
+    from borpil import yasayan_isil as yi
+    d = yi.dogum()
+    assert d.canli and d.tms_ok
+    assert d.soc == pytest.approx(1.0)
+    assert d.T_C == pytest.approx(35.0)
+    assert d.kullanici_gostergesi == pytest.approx(100.0)
+    assert d.kullanici_kWh < d.paket.gercek_enerji_kWh * 0.92
+    assert d.kullanici_kWh > d.paket.gercek_enerji_kWh * 0.80
+
+
+def test_yis_12h_prizsiz_eksi10_canli_kalir():
+    from borpil import yasayan_isil as yi
+    d, o = yi.park_tutma(yi.dogum(), -10.0, 12.0, prize=False)
+    assert o["canli"]
+    assert o["T_bitis_C"] >= 24.0
+    assert o["T_bitis_C"] <= 36.0
+    assert o["isitici_kWh"] > 0.5
+    assert o["soc_bitis"] > yi.YasayanIsil().yasam_payi
+    assert o["gostergesi"] > 80.0
+
+
+def test_yis_12h_prizli_T_ve_soc_sabit():
+    from borpil import yasayan_isil as yi
+    dog = yi.dogum()
+    d, o = yi.park_tutma(dog, -10.0, 12.0, prize=True)
+    assert o["canli"]
+    assert 34.0 <= o["T_bitis_C"] <= 36.0
+    assert o["soc_bitis"] == pytest.approx(1.0, abs=1e-6)
+    assert o["sebeke_kWh"] > 3.0
+    assert o["yasam_kWh"] == pytest.approx(0.0, abs=1e-6)
+    assert o["gostergesi"] == pytest.approx(100.0)
+
+
+def test_yis_surus_sogukta_gen1_den_az_kisit():
+    from borpil import yasayan_isil as yi
+    k = yi.karsilastir_lfp_gibi(-10.0, 12.0)
+    g1 = k["gen1"]["surus"]["guc_kisiti_s"]
+    yp = k["yis_prizli"]["surus"]["guc_kisiti_s"]
+    ys = k["yis_prizsiz"]["surus"]["guc_kisiti_s"]
+    assert k["yis_prizli"]["surus"]["hazir"]
+    assert k["yis_prizsiz"]["surus"]["hazir"]
+    assert yp < 0.25 * g1
+    assert ys < 0.50 * g1
+    assert k["yis_prizli"]["sarj_dk"] <= k["gen1"]["sarj_dk"]
+    assert k["yis_prizli"]["sarj_dk"] > 20.0
+    assert k["yis_prizsiz"]["sarj_dk"] > 20.0
+
+
+def test_yis_tms_olumu_surusu_yasaklar():
+    from borpil import yasayan_isil as yi
+    olu = yi.tms_oldur(yi.dogum())
+    assert not olu.canli
+    _, s = yi.kullanici_surusu(olu, -10.0)
+    assert s is None
+
+
+def test_yis_kullanici_enerjisi_rezerv_kadar_kisilir():
+    from borpil import yasayan_isil as yi
+    d = yi.dogum()
+    y = d.yasayan
+    beklenen = (y.kullanici_tavani - y.yasam_payi) * d.paket.gercek_enerji_kWh
+    assert d.kullanici_kWh == pytest.approx(beklenen, rel=1e-6)
+    assert yi.rezerv_kWh(d.paket, y) == pytest.approx(y.yasam_payi * d.paket.gercek_enerji_kWh)

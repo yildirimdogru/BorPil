@@ -10,14 +10,14 @@ koda bağlıdır; kod değişirse rapor değişir.
 | Ajan | Disiplin | Sorumluluk | Deponun ilgili kısmı |
 |---|---|---|---|
 | **A1 — Elektrokimyacı** | Kimya | Reaksiyonlar, Gibbs enerjileri, hücre potansiyelleri, kararlılık pencereleri, elektrolit kimyası, 10–45 °C hattı | `termodinamik.py`, `malzemeler.py`, `kimya_sicaklik.py`, `docs/02`, `docs/10` |
-| **A2 — Katı hâl fizikçisi** | Fizik | İyon taşınımı (Arrhenius, faz geçişleri), arayüz direnci, kritik akım yoğunluğu, ısıl model | `elektrolit.py`, `simulasyon.py` |
+| **A2 — Katı hâl fizikçisi** | Fizik | İyon taşınımı (Arrhenius, faz geçişleri), arayüz direnci, kritik akım yoğunluğu, ısıl model | `elektrolit.py`, `simulasyon.py`, `yasayan_isil.py` |
 | **A3 — Malzeme bilimci** | Malzeme bilimi | Sentez rotaları, folyo/kompozit reçeteleri, üretim prosesi, tedarik zinciri (Türkiye boru), maden bütçesi | `hucre.py` reçeteler, `docs/03`, `docs/08` |
 | **A4 — Matematikçi / geometrici** | Matematik, geometri | [B12H12]²⁻ ikosahedronu, kafes boşluk analizi, paketleme geometrisi, sayısal çözümler | `geometri.py`, `simulasyon.py` çözücü |
 | **A5 — Biyolog / toksikolog** | Biyoloji, çevre | Bor, sodyum, vanadyum toksikolojisi; hidrojen salımı; yaşam döngüsü ve geri dönüşüm | `docs/05` |
-| **A6 — Sistem mühendisi** | Otomotiv | Paket mimarisi, gerilim, güç, ısıl yönetim, sürüş çevrimi, maliyet; ürün formu belgeler | `paket.py`, `karsilastirma.py`, `docs/04`, `docs/08`, `docs/urun/` |
+| **A6 — Sistem mühendisi** | Otomotiv | Paket mimarisi, gerilim, güç, ısıl yönetim, sürüş çevrimi, maliyet; ürün formu belgeler | `paket.py`, `karsilastirma.py`, `yasayan_isil.py`, `docs/04`, `docs/08`, `docs/11`, `docs/urun/` |
 | **H1, H2 — Bağımsız hakemler (1. tur)** | Kimya/fizik; sayısal model | Kör inceleme: sabitler, literatür uyumu, birim hataları | `docs/06 §6.3` |
 | **H3, H4 — Bağımsız uzmanlar (2. tur)** | Elektrik-elektronik; EV batarya üretimi | Mimari, BMS, ısıl-elektrik, güvenlik; format, proses, verim, maliyet, nitelendirme | `docs/07` |
-| **Kurul (5 üye)** | Tüm disiplinler | H3/H4 önerilerini oylar, ödünleşimleri karara bağlar | `docs/07 §7.3`; 3. tur `docs/09` |
+| **Kurul (5 üye)** | Tüm disiplinler | H3/H4 önerilerini oylar, ödünleşimleri karara bağlar | `docs/07 §7.3`; 3. tur `docs/09`; YIS `docs/11` |
 
 ## Yöntem
 
@@ -58,6 +58,7 @@ koda bağlıdır; kod değişirse rapor değişir.
 | K11 | Maliyet modeli gen-1 gerçekçi: ×1.75, verim %75, +32 USD/kWh (kurul P13) | Şeffaflık; 120 USD/kWh iddiasından vazgeçildi, hedef bandı 165–200. |
 | K12 | 35–60 °C bandı pazar pivotu değil; atık ısı SKU 8/10; süperkap gen-1 baz değil (P21–P26) | 3. tur oturum `docs/09`: Türkiye iki uç (Doğu kışı, güney yazı); zincir tutar tutuşturmaz; katalizör = priz + kayıp ısı + darbe + tampon |
 | K13 | 10–45 °C kimya hattı (LT): bulk karba-kloso ile açılır, CCD kilit kalır | A1 `docs/10`; tuz formülü tek başına soğuk gücü çözmez; ara tabaka + CCD(T) ölçümü gen-2 |
+| K14 | Yaşayan ısıl sistem (YIS): fail-dead TMS, %8 yaşam payı, fabrika doğumu | `docs/11`, P27–P32; P19 SKU varsayılanı durur; `borpil yasam` |
 
 ## Ürün formu belgeler
 

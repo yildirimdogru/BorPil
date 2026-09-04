@@ -62,7 +62,7 @@ dendritsiz, 144 Wh/kg), **S** (Na-S, ~400 Wh/kg — spekülatif, uzun vade).
 - **Hızlı şarj ve soğuk güç, Na kaplama kritik akım yoğunluğu ile sınırlıdır:** 1.5 mA/cm² @ 25 °C
   (literatür 0.5–2), 4.5 @ 45 °C. 75 kW şarj yalnız paket ≥ 44 °C'de; soğuk pakette şarj süresi
   ısıtma gücüyle belirlenir → DC istasyonda 20 kW şebeke ısıtıcı. −10 °C'de tepe güç ~7 kW; ön ısıtma
-  şarttır (şebekeden). Deneysel doğrulama zorunlu.
+  şarttır (şebekeden) **veya** yaşayan ısıl sistem (YIS, `docs/11`) paketi 25–35 °C'de tutar.
 - **Hidroborat oksidasyon sınırı ~3 V** (termodinamik); NVP'nin 3.37 V platosu ve ~3.8 V kesimi
   **zorunlu ALD kaplama** ile pasifleştirici arayüze dayanır; model bu durumu **uyarı** olarak
   bayraklar. A0 (NaCrO₂) paralel nitelendirme hattı.
@@ -86,5 +86,6 @@ Ayrıntılar: `docs/02` (kimya), `docs/03` (malzeme/üretim), `docs/04` (hücre/
 `docs/08` (paket maden ve element bütçesi),
 `docs/09` (ısıl ekosistem ve soğuk başlangıç — 3. tur kurul),
 `docs/10` (kimya ekibi: 10–45 °C penceresi),
+`docs/11` (yaşayan ısıl sistem — soğuk sürüş/şarj, P27–P32),
 `docs/urun/` (satışa-hazır ürün formu: veri formu, entegrasyon, güvenlik/garanti, broşür),
 `cikti/RAPOR.md` (sayılar).

@@ -11,6 +11,7 @@ from . import rapor
 from . import simulasyon as sm
 from . import kimya_sicaklik as ky
 from . import termodinamik as td
+from . import yasayan_isil as yi
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -45,6 +46,12 @@ def main(argv: list[str] | None = None) -> int:
 
     alt.add_parser("termo", help="teorik termodinamik sınırlar")
     alt.add_parser("kimya", help="10–45 °C kimya taraması (bulk σ vs CCD)")
+
+    ya = alt.add_parser("yasam", help="yaşayan ısıl sistem: soğuk park + LFP-gibi sürüş/şarj")
+    ya.add_argument("--ortam", type=float, default=-10.0, help="ortam sıcaklığı (°C)")
+    ya.add_argument("--park-saat", type=float, default=12.0, help="park süresi (saat)")
+    ya.add_argument("--prize", action="store_true", help="park boyunca şebeke bağlı")
+    ya.add_argument("--varyant", default="A-alt", choices=list(hc.VARYANTLAR))
 
     r = alt.add_parser("rapor", help="tam rapor + grafikler üret")
     r.add_argument("--cikti", default="cikti")
@@ -97,6 +104,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"DBFC gidiş-dönüş verimi: %{d['gidis_donus_verimi']*100:.0f}")
     elif a.komut == "kimya":
         print(ky.markdown_bolum())
+    elif a.komut == "yasam":
+        k = yi.karsilastir_lfp_gibi(a.ortam, a.park_saat, a.varyant)
+        print(yi.ozet_metin(k))
+        if a.prize:
+            p = pk.boyutlandir(hc.VARYANTLAR[a.varyant])
+            d, o = yi.park_tutma(yi.dogum(p), a.ortam, a.park_saat, prize=True)
+            print(f"--prize: T={o['T_bitis_C']:.1f} °C, SOC={o['soc_bitis']:.3f}, "
+                  f"gösterge %{o['gostergesi']:.0f}, şebeke {o['sebeke_kWh']:.2f} kWh, canli={o['canli']}")
     elif a.komut == "rapor":
         yol = rapor.uret(a.cikti, grafikler=not a.grafiksiz)
         print(f"Rapor yazıldı: {yol}")

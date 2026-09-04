@@ -77,6 +77,8 @@ Sınır Na'nın erime noktasıdır (97.8 °C).
   1.8 kWh rejen mekanik frene); atık ısı ile paket zamanla 31 °C'ye çıkar. BMS sürücüyü bilgilendirir.
 - **3. tur (P21–P26):** 35–60 °C Türkiye'yi öldürmez ama 1. UX riskidir; atık ısı ekosistemi **8/10**;
   süperkapasitör gen-1 baz değil (konfor tamponu / darbe-ısıtma kaynağı). Ayrıntı `docs/09`.
+- **4. tur (P27–P32):** yaşayan ısıl sistem paralel mod — fabrika doğumu, %8 yaşam payı, fail-dead
+  TMS, prizde 35 °C tutma, prizsiz 25–35 °C histerezis. P19 varsayılan SKU durur. Ayrıntı `docs/11`.
 
 ## 4.4 Araç düzeyi sonuçlar (WLTP-benzeri sentetik çevrim)
 
