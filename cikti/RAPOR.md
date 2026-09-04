@@ -176,6 +176,27 @@ Element bütçesi: B 0.58 kg/kWh, Na 0.26 kg/kWh, V 0.00 kg/kWh, Li 0.00 kg/kWh
 Malzeme maliyeti (varsayımsal ölçek): 381 USD/kWh
 ```
 
+```
+== BorPil-LT (Na | Na2(CB9H10)(CB11H12) | NVP) — 10–45 °C kimya hattı ==
+Katot: Na3V2(PO4)3 (NASICON, NVP) | SE: Na2(CB9H10)(CB11H12) (karışık karba-kloso-borat) | Anot: Na metal
+Çalışma sıcaklığı 25 °C → σ = 70.00 mS/cm, toplam ASR ≈ 15.6 Ω·cm²
+Katmanlar (tekrar birimi):
+  - Al folyo (katot)                12.0 µm     3.24 mg/cm²
+  - Katot kompozit                 190.3 µm    38.41 mg/cm²
+  - SE ayırıcı                      30.0 µm     3.75 mg/cm²
+  - Na metal anot (fazlalık; şarjlı kalınlık)    46.5 µm     1.94 mg/cm²
+  - Al folyo (anot)                 12.0 µm     3.24 mg/cm²
+  - Na metal anot (fazlalık; şarjlı kalınlık)    46.5 µm     1.94 mg/cm²
+  - SE ayırıcı                      30.0 µm     3.75 mg/cm²
+  - Katot kompozit                 190.3 µm    38.41 mg/cm²
+Tekrar birimi: 558 µm, 94.7 mg/cm², 6.0 mAh/cm², 3.37 V
+Yığın: 214 Wh/kg, 363 Wh/L
+Hücre (100×300 mm pouch, 33 birim): 59.4 Ah, 969 g, 617 mL → 207 Wh/kg, 324 Wh/L
+Element bütçesi: B 0.93 kg/kWh, Na 0.80 kg/kWh, V 0.60 kg/kWh, Li 0.00 kg/kWh
+Malzeme maliyeti (varsayımsal ölçek): 663 USD/kWh
+  ! UYARI: katot kesim potansiyeli ~3.8 V termodinamik oksidasyon sınırının (3.3 V) üstünde; çalışma pasifleştirici arayüze (kaplama) dayanır.
+```
+
 ## 4. Paket (75 kWh, 120s3p, 3 bağımsız dizi, pouch-in-frame)
 
 ### 4a. Baz çizgisi — BorPil-A-alt
@@ -268,7 +289,50 @@ Darbe ısıtma −20 °C'de 42 kW, 0 °C'de 11 kW, 25 °C'de 2.6 kW üretir (dir
 
 Ekonomik hedef bandı (165–200 USD/kWh) için SE ≤ 25 USD/kg **ve** verim ≥ %90 **ve** imalat çarpanı ≤ 1.55 (10 GWh ölçeği) gerekir; 120 USD/kWh mevcut malzeme karmasıyla ulaşılabilir değildir (SE ≤ 15 USD/kg + kompozitte SE %18 + A-Fe katot gen-2).
 
-## 10. Li-iyon ile karşılaştırma (75 kWh paket)
+## 10. Kimya taraması: 10–45 °C penceresi (A1)
+
+== Kimya taraması: 10–45 °C penceresi ==
+Gen-1 B12/B10: σ(10 °C)=0.51 mS/cm vs σ(45 °C)=3.12 mS/cm (bulk 6.1× zayıf).
+Karba-kloso Na2(CB9H10)(CB11H12): σ(10 °C)=41.8 mS/cm — bulk eşiği (3.12) AŞILIR.
+CCD gen-1 (Ea=0.45 eV): 0.59 mA/cm² @10 °C vs 4.51 @45 °C (7.6×).
+10 °C'de bugünkü 45 °C CCD için J_25=11.4 mA/cm² zorunlu (Ea düşürmek yetmez: Ea→0 iken CCD(10)→1.5 mA/cm² < 4.5).
+Sonuç: yalnız elektrolit bulk'ını değiştirmek 10–45 °C'yi açmaz; Na/SE arayüz CCD'si birincil kilit.
+BorPil-LT = NVP + ölçülmüş karba-kloso (4 V katot yok). BorPil-B = aynı SE + NVPF (oksidasyon riski).
+
+| Elektrolit | Ea eV | σ(10) mS/cm | σ(25) | σ(45) | ASR 30 µm @10 °C | Bulk 10 °C ≥ gen-1@45 °C |
+|---|---:|---:|---:|---:|---:|:---:|
+| Na2B12H12 | 0.80 | 6.68e-09 | 3.47e-08 | 2.46e-07 | 4.5e+08 | hayır |
+| Na2B10H10 | 0.70 | 0.000236 | 0.001 | 0.00554 | 1.3e+04 | hayır |
+| Na2(B12H12)(B10H10) | 0.40 | 0.514 | 1.17 | 3.12 | 5.8 | hayır |
+| NaCB11H12 | 0.60 | 0.0029 | 0.01 | 0.0434 | 1e+03 | hayır |
+| Na2(CB9H10)(CB11H12) | 0.25 | 41.8 | 70 | 129 | 0.072 | evet |
+
+| T °C | CCD gen-1 mA/cm² | deşarj j (CCD×2) | CCD Ea=0.22 | CCD J_25=4 |
+|---:|---:|---:|---:|---:|
+| -10 | 0.15 | 0.29 | 0.48 | 0.39 |
+| 0 | 0.30 | 0.60 | 0.69 | 0.81 |
+| 10 | 0.59 | 1.19 | 0.95 | 1.58 |
+| 25 | 1.50 | 3.00 | 1.50 | 4.00 |
+| 35 | 2.65 | 5.30 | 1.98 | 7.06 |
+| 45 | 4.51 | 9.02 | 2.57 | 12.03 |
+
+| Sentez hedefi | Ea bulk | σ(25) mS/cm | σ(10) | J_25 | Ea CCD | CCD(10) |
+|---|---:|---:|---:|---:|---:|---:|
+| Bulk-yalnız (CCD aynı) | 0.30 | 5.80 | 3.12 | 1.50 | 0.45 | 0.59 |
+| Yumuşak (10 °C'de 80 kW sınıfı, CCD×2 ≥ 3 mA/cm²) | 0.28 | 1.78 | 1.00 | 2.78 | 0.30 | 1.50 |
+| Bulk+CCD (10 °C ≈ bugünkü 45 °C) | 0.25 | 5.23 | 3.12 | 7.10 | 0.22 | 4.51 |
+
+| Varyant | Wh/kg hücre | P_dch 10/25/45 °C kW | P_chg 10/25/45 °C kW | 75 kW için min T | USD/kWh |
+|---|---:|---:|---:|---:|---:|
+| A-alt | 177 | 26 / 66 / 197 | 10 / 26 / 77 | 44 | 412 |
+| A | 203 | 27 / 69 / 206 | 10 / 25 / 76 | 45 | 358 |
+| LT | 207 | 29 / 73 / 220 | 10 / 25 / 75 | 46 | 1582 |
+| B | 281 | 22 / 56 / 169 | 8 / 19 / 57 | 50 | 1089 |
+| C | 145 | 27 / 68 / 204 | 10 / 25 / 76 | 45 | 461 |
+
+Yorum: LT ve B, karba-kloso ile omik kaybı 10 °C'de düşürür; **tepe güç hâlâ CCD** (10 °C satırları A-alt ile aynı mertebede kalır). 75 kW kapısı ~44 °C'den inmez. Ayrıntı ve kimya rotaları: `docs/10_kimya_10_45C.md`.
+
+## 11. Li-iyon ile karşılaştırma (75 kWh paket)
 
 | Kimya | Wh/kg (hücre) | Wh/L (hücre) | USD/kWh (hücre, varsayım) | Li (kg/75 kWh) | B (kg) | Co (kg) | Ni (kg) | Yanıcı elektrolit | Paket kütlesi (kg) | Paket hacmi (L) |
 |---|---:|---:|---:|---:|---:|---:|---:|:--:|---:|---:|
@@ -279,10 +343,11 @@ Ekonomik hedef bandı (165–200 USD/kWh) için SE ≤ 25 USD/kg **ve** verim �
 | BorPil-B | 281 | 448 | 791 | 0.0 | 48.6 | 0.0 | 0.0 | hayır | 388 | 326 |
 | BorPil-C | 145 | 250 | 319 | 0.0 | 98.6 | 0.0 | 0.0 | hayır | 718 | 569 |
 | BorPil-S | 403 | 423 | 667 | 0.0 | 44.1 | 0.0 | 0.0 | hayır | 272 | 343 |
+| BorPil-LT | 207 | 325 | 1161 | 0.0 | 68.8 | 0.0 | 0.0 | hayır | 511 | 440 |
 | Li-iyon NMC811 (pouch, 2025 sınıfı) | 265 | 700 | 100 | 8.2 | 0.0 | 6.8 | 56.2 | evet | 393 | 179 |
 | Li-iyon LFP (prizmatik, 2025 sınıfı) | 170 | 380 | 75 | 6.8 | 0.0 | 0.0 | 0.0 | evet | 613 | 329 |
 
-## 11. Grafikler
+## 12. Grafikler
 
 ![iletkenlik](iletkenlik_arrhenius.png)
 

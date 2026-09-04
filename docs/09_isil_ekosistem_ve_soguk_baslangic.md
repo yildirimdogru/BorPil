@@ -231,7 +231,7 @@ Kullanıcının fark etmemesi = **hissettiği güç ve şarj süresi**, paket te
 | 5 | Çekiş tamponu (kap veya pilot yığın) | İlk 10–20 s güç açığını gizler | 0,2 kWh / ~35 kg veya 2 kWh Na | maliyet, yanıcı kap | **P24 opsiyon** |
 | 6 | 40–45 °C faz değişim (PCM) ceketi | 30–90 dk park sonrası sıcak kal | kütle + sızıntı | geceyi kurtarmaz | **İzleme, gen-2** |
 | 7 | PTC’yi 6 kW’a çekmek | Park süresini ~2× kısaltır | 95 dk Na erimesi (takılı) | ASIL, P4/P5’te 3 kW’a inildi | **Red; kesici olmadan asla** |
-| 8 | Kimyayı 10–45 °C’ye çekmek (B, karba-kloso) | Bandı yumuşatır | maliyet, tedarik | gen-2 | **Yol haritası, bu oturumda yok** |
+| 8 | Kimyayı 10–45 °C’ye çekmek (B, karba-kloso) | Bandı yumuşatır | maliyet, tedarik, CCD kilit | gen-2 LT | **A1 raporu `docs/10`; bu oturumda yoktu** |
 
 “Katalizör” pratikte tek parça değil: **(1) priz + (2) kayıp ısıtma + (4) darbe + (5) tampon**.
 (1) ve (3) bugün var. (2)(4)(5) kullanıcı farkını kapatan katmanlar.

@@ -318,6 +318,18 @@ BORPIL_A_FE = HucreTasarimi(
     katot=mz.NA_FE_MN,
 )
 
+# 10–45 °C kimya hattı (A1): ölçülmüş karba-kloso bulk (10 °C'de σ ≫ 3 mS/cm) + NVP
+# (NVPF değil — 4 V penceresi ayrı risk). CCD/arayüz hâlâ gen-1 Ea=0.45 varsayımı;
+# bu varyant bulk kilidini açar, CCD kilidini açmaz (docs/10).
+BORPIL_LT = HucreTasarimi(
+    ad="BorPil-LT (Na | Na2(CB9H10)(CB11H12) | NVP) — 10–45 °C kimya hattı",
+    elektrolit=mz.NA2_CB9_CB11,
+    ayirici_kalinlik_um=30.0,
+    anot_fazlasi_um=20.0,
+    calisma_sicakligi_C=25.0,
+    arayuz_direnci_ohm_cm2=15.0,
+)
+
 VARYANTLAR = {
     "A": BORPIL_A,
     "A-alt": BORPIL_A_ALT,
@@ -326,4 +338,5 @@ VARYANTLAR = {
     "B": BORPIL_B,
     "C": BORPIL_C,
     "S": BORPIL_S,
+    "LT": BORPIL_LT,
 }

@@ -13,6 +13,7 @@ from . import elektrolit as el
 from . import geometri as ge
 from . import hucre as hc
 from . import karsilastirma as ks
+from . import kimya_sicaklik as ky
 from . import malzemeler as mz
 from . import paket as pk
 from . import simulasyon as sm
@@ -37,7 +38,8 @@ def grafik_iletkenlik(cikti: Path) -> Path:
     for ad, se in mz.KATI_ELEKTROLITLER.items():
         T_C, sig = el.sicaklik_tarama(se, -30, 150, 361)
         ax.semilogy(1000 / (T_C + 273.15), sig, label=ad)
-    ax.axvspan(1000 / (60 + 273.15), 1000 / (25 + 273.15), color="0.9", label="Çalışma penceresi 25-60 °C")
+    ax.axvspan(1000 / (60 + 273.15), 1000 / (25 + 273.15), color="0.9", label="Gen-1 pencere 25-60 °C")
+    ax.axvspan(1000 / (45 + 273.15), 1000 / (10 + 273.15), color="#bbdefb", alpha=0.45, label="Hedef 10-45 °C")
     ax.axhline(1e-3, ls=":", c="k", lw=0.8)
     ax.text(3.9, 1.2e-3, "1 mS/cm (EV eşiği)", fontsize=8)
     ax.set_xlabel("1000/T (1/K)")
@@ -325,11 +327,13 @@ def uret(cikti_dizini: str | Path = "cikti", grafikler: bool = True) -> Path:
     md.append("Ekonomik hedef bandı (165–200 USD/kWh) için SE ≤ 25 USD/kg **ve** verim ≥ %90 **ve** imalat çarpanı ≤ 1.55 (10 GWh ölçeği) gerekir; "
               "120 USD/kWh mevcut malzeme karmasıyla ulaşılabilir değildir (SE ≤ 15 USD/kg + kompozitte SE %18 + A-Fe katot gen-2).\n")
 
-    md.append("## 10. Li-iyon ile karşılaştırma (75 kWh paket)\n")
+    md.append(ky.markdown_bolum())
+
+    md.append("## 11. Li-iyon ile karşılaştırma (75 kWh paket)\n")
     md.append(ks.markdown_tablo(satirlar, g.brut_enerji_kWh))
 
     if grafikler:
-        md.append("## 11. Grafikler\n")
+        md.append("## 12. Grafikler\n")
         for ad, yol in yollar.items():
             md.append(f"![{ad}]({yol.name})\n")
 

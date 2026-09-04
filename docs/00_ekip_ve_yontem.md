@@ -9,7 +9,7 @@ koda bağlıdır; kod değişirse rapor değişir.
 
 | Ajan | Disiplin | Sorumluluk | Deponun ilgili kısmı |
 |---|---|---|---|
-| **A1 — Elektrokimyacı** | Kimya | Reaksiyonlar, Gibbs enerjileri, hücre potansiyelleri, kararlılık pencereleri, elektrolit kimyası | `termodinamik.py`, `malzemeler.py`, `docs/02` |
+| **A1 — Elektrokimyacı** | Kimya | Reaksiyonlar, Gibbs enerjileri, hücre potansiyelleri, kararlılık pencereleri, elektrolit kimyası, 10–45 °C hattı | `termodinamik.py`, `malzemeler.py`, `kimya_sicaklik.py`, `docs/02`, `docs/10` |
 | **A2 — Katı hâl fizikçisi** | Fizik | İyon taşınımı (Arrhenius, faz geçişleri), arayüz direnci, kritik akım yoğunluğu, ısıl model | `elektrolit.py`, `simulasyon.py` |
 | **A3 — Malzeme bilimci** | Malzeme bilimi | Sentez rotaları, folyo/kompozit reçeteleri, üretim prosesi, tedarik zinciri (Türkiye boru), maden bütçesi | `hucre.py` reçeteler, `docs/03`, `docs/08` |
 | **A4 — Matematikçi / geometrici** | Matematik, geometri | [B12H12]²⁻ ikosahedronu, kafes boşluk analizi, paketleme geometrisi, sayısal çözümler | `geometri.py`, `simulasyon.py` çözücü |
@@ -30,7 +30,7 @@ koda bağlıdır; kod değişirse rapor değişir.
 3. **Seçim.** Ana yol: **Na-metal | Na₂(B₁₂H₁₂)₀.₅(B₁₀H₁₀)₀.₅ | Na₃V₂(PO₄)₃** tamamen katı hâl
    hücre (BorPil-A). Bor, hücrenin iyonik omurgasını (elektrolit + katot kompozitinin
    iyonik fazı) oluşturur; hücre kütlesinin ~%19'u bordur. Yedek/alt varyantlar: A0 (NaCrO₂),
-   A-Fe (vanadyumsuz), B (karba-kloso-borat, 4 V), C (sert karbon anot), S (Na-S).
+   A-Fe (vanadyumsuz), B (karba-kloso-borat, 4 V), **LT** (karba-kloso + NVP, 10–45 °C), C (sert karbon anot), S (Na-S).
    DBFC menzil uzatıcı olarak ikincil yol.
 4. **Parametrik modelleme** (A3, A4, A6): katman yığını → hücre → paket → araç. Her seviye
    ayrı modül; varsayımlar veri sınıflarında açık alanlar olarak tutulur.
@@ -57,6 +57,7 @@ koda bağlıdır; kod değişirse rapor değişir.
 | K10 | 120s3p, **3 bağımsız dizi**, pouch-in-frame, 80 °C ısıtıcı kesici, 20 kW şebeke ısıtıcı, 0.8 kW atık ısı, parkta ısıtma yok (kurul P4–P10, P19) | Elektrik-elektronik ve üretici incelemeleri; güvenlik oyları baskın. |
 | K11 | Maliyet modeli gen-1 gerçekçi: ×1.75, verim %75, +32 USD/kWh (kurul P13) | Şeffaflık; 120 USD/kWh iddiasından vazgeçildi, hedef bandı 165–200. |
 | K12 | 35–60 °C bandı pazar pivotu değil; atık ısı SKU 8/10; süperkap gen-1 baz değil (P21–P26) | 3. tur oturum `docs/09`: Türkiye iki uç (Doğu kışı, güney yazı); zincir tutar tutuşturmaz; katalizör = priz + kayıp ısı + darbe + tampon |
+| K13 | 10–45 °C kimya hattı (LT): bulk karba-kloso ile açılır, CCD kilit kalır | A1 `docs/10`; tuz formülü tek başına soğuk gücü çözmez; ara tabaka + CCD(T) ölçümü gen-2 |
 
 ## Ürün formu belgeler
 

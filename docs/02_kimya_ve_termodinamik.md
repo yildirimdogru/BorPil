@@ -94,7 +94,14 @@ istasyonda toplanıp rejenerasyona gönderilir (kapalı bor döngüsü).
 - Karışık karba-kloso-borat için tabloda 25 °C üstü değerler Arrhenius **ekstrapolasyonu**dur
   (195 mS/cm @ 60 °C ölçüm değil).
 
-## 2.7 Kaynaklar (seçilmiş)
+## 2.7 10–45 °C penceresi (A1, 2026-09)
+
+Gen-1 bandı (35–60 °C) soğuk UX'in kaynağıdır (`docs/09`). Kimya ile 10–45 °C'ye inmek **bulk
+iletkenlikte mümkündür** (karba-kloso, σ(10 °C) ≫ 3 mS/cm) ama **Na kaplama CCD'si** (Ea 0,45 eV)
+10 °C'de 7,5× düşer; tuz değişimi bunu otomatik düzeltmez. Ayrı tarama, sentez KPI ve
+BorPil-LT hattı: `docs/10`, `borpil.kimya_sicaklik`, CLI `borpil kimya`.
+
+## 2.8 Kaynaklar (seçilmiş)
 
 - Udovic, T. J. ve ark. *Chem. Commun.* **50**, 3750 (2014) — Na₂B₁₂H₁₂ süperiyonik iletim.
 - Udovic, T. J. ve ark. *Adv. Mater.* **26**, 7622 (2014) — Na₂B₁₀H₁₀.

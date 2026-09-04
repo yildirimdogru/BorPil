@@ -9,6 +9,7 @@ from . import hucre as hc
 from . import paket as pk
 from . import rapor
 from . import simulasyon as sm
+from . import kimya_sicaklik as ky
 from . import termodinamik as td
 
 
@@ -43,6 +44,7 @@ def main(argv: list[str] | None = None) -> int:
     sa.add_argument("--soc", type=float, nargs=2, default=(0.10, 0.80), metavar=("BAS", "HEDEF"))
 
     alt.add_parser("termo", help="teorik termodinamik sınırlar")
+    alt.add_parser("kimya", help="10–45 °C kimya taraması (bulk σ vs CCD)")
 
     r = alt.add_parser("rapor", help="tam rapor + grafikler üret")
     r.add_argument("--cikti", default="cikti")
@@ -93,6 +95,8 @@ def main(argv: list[str] | None = None) -> int:
                   f"{k.enerji_wh_kg_reaktan:6.0f} Wh/kg (reaktan)  {k.enerji_wh_kg_urun:5.0f} Wh/kg (ürün)")
         d = td.dbfc_gidis_donus()
         print(f"DBFC gidiş-dönüş verimi: %{d['gidis_donus_verimi']*100:.0f}")
+    elif a.komut == "kimya":
+        print(ky.markdown_bolum())
     elif a.komut == "rapor":
         yol = rapor.uret(a.cikti, grafikler=not a.grafiksiz)
         print(f"Rapor yazıldı: {yol}")
